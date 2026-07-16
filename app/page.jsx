@@ -1,4 +1,4 @@
-import SpeedTest from '@/components/SpeedTest';
+import { SpeedTest } from '@/features/speed-test';
 
 const faq = [
   {
