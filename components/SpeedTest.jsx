@@ -6,7 +6,7 @@ import {
   measureDownload,
   measureUpload,
   detectEnvironment,
-} from "@/lib/engine";
+} from "@/features/speed-test/engine";
 import {
   verdict,
   grade,
