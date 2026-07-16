@@ -71,6 +71,10 @@ export async function measureUpload(onProgress, options = {}) {
   await Promise.allSettled(streams);
   registry.dispose();
 
+  if (totalBytes === 0 && !options.signal?.aborted) {
+    throw new Error("upload failed: no successful samples");
+  }
+
   const stable = speedSamples.slice(Math.floor(speedSamples.length * 0.3));
   return {
     mbps: Math.round(median(stable) * 10) / 10,

@@ -23,7 +23,7 @@ export async function detectEnvironment(options = {}) {
   let isp = null,
     region = null;
   try {
-    const res = await deps.fetch(`${BASE}/meta`);
+    const res = await deps.fetch(`${BASE}/meta`, { signal: options.signal });
     if (!res.ok) throw new Error(`meta request failed: ${res.status}`);
     const meta = await res.json();
     region = [meta.region, meta.city].filter(Boolean).join(" ");

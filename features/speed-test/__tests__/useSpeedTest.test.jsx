@@ -168,6 +168,48 @@ describe("useSpeedTest", () => {
     expect(result.current.result).toMatchObject({ down: 70, up: 11 });
   });
 
+  it("늦게 끝난 이전 환경 조회가 현재 run의 analytics 환경을 덮어쓰지 않는다", async () => {
+    window.dataLayer = [];
+    const engine = createMockEngine();
+    const environments = [deferred(), deferred(), deferred()];
+    engine.detectEnvironment = vi.fn((options = {}) => {
+      const next = environments[engine.detectEnvironment.mock.calls.length - 1];
+      next.signal = options.signal;
+      return next.promise;
+    });
+    const { result } = renderHook(() => useSpeedTest({ engine }));
+    await flush();
+
+    await act(async () => {
+      result.current.start();
+    });
+    expect(environments[0].signal.aborted).toBe(true);
+    expect(environments[1].signal.aborted).toBe(false);
+
+    await act(async () =>
+      environments[1].resolve({
+        device: "모바일",
+        connType: "셀룰러",
+        isp: "KT",
+        region: "서울",
+      }),
+    );
+    await act(async () =>
+      environments[0].resolve({
+        device: "PC",
+        connType: "유선",
+        isp: "OLD",
+        region: "과거",
+      }),
+    );
+
+    await act(async () => {
+      result.current.start();
+    });
+    const started = window.dataLayer.filter((item) => item.event === "test_started");
+    expect(started.at(-1)).toMatchObject({ device: "모바일", conn: "셀룰러" });
+  });
+
   it("언마운트 시 진행 중인 측정을 중단한다", async () => {
     const engine = createMockEngine();
     const { unmount } = renderHook(() => useSpeedTest({ engine }));

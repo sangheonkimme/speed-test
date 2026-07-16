@@ -16,16 +16,19 @@ export async function measureDownload(onProgress, onLoadedLatency, options = {})
   const loadedPinger = deps.setInterval(async () => {
     if (registry.aborted) return;
     const t0 = deps.now();
+    const ctrl = registry.register();
     try {
       const res = await deps.fetch(DOWN(0) + `&r=${deps.random()}`, {
         cache: "no-store",
-        signal: options.signal,
+        signal: ctrl.signal,
       });
       if (!res.ok) return; // 오류 응답은 지연 샘플로 사용하지 않음
       loadedRtts.push(deps.now() - t0);
       if (onLoadedLatency) onLoadedLatency(Math.round(median(loadedRtts)));
     } catch {
       // 보조 지표라 실패 샘플은 버린다 (중단 포함)
+    } finally {
+      registry.unregister(ctrl);
     }
   }, 1500);
 
@@ -106,6 +109,10 @@ export async function measureDownload(onProgress, onLoadedLatency, options = {})
   }
   await Promise.allSettled(streams);
   registry.dispose();
+
+  if (totalBytes === 0 && !options.signal?.aborted) {
+    throw new Error("download failed: no successful samples");
+  }
 
   // 최종값: 안정 구간(후반 60%) 샘플 중앙값
   const stable = speedSamples

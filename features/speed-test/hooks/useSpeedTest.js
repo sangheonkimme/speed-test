@@ -94,8 +94,9 @@ export function useSpeedTest({ engine = defaultEngine, autoStart = true } = {}) 
 
     // 환경 감지 (병렬, FR-4)
     eng
-      .detectEnvironment()
+      .detectEnvironment({ signal: ac.signal })
       .then((e) => {
+        if (!live()) return;
         envRef.current = e;
         safeDispatch({ type: "ENV_DONE", env: e });
       })

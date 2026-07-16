@@ -151,6 +151,47 @@ describe("measureDownload", () => {
     expect(res.durationMs).toBeLessThan(2000);
     expect(vi.getTimerCount()).toBe(0);
   });
+
+  it("모든 다운로드 요청이 실패하면 0 Mbps 대신 오류를 던진다", async () => {
+    const fetchImpl = vi.fn(async () => {
+      await tick(100);
+      throw new TypeError("offline");
+    });
+    const promise = measureDownload(null, null, { deps: { fetch: fetchImpl } });
+    const rejection = expect(promise).rejects.toThrow("download failed");
+
+    await vi.advanceTimersByTimeAsync(20000);
+
+    await rejection;
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it("정상 종료 시 진행 중인 loaded-latency 요청도 중단한다", async () => {
+    let latencySignal;
+    const fetchImpl = vi.fn(async (url, options = {}) => {
+      if (url.includes("bytes=0")) {
+        latencySignal = options.signal;
+        return new Promise((resolve, reject) => {
+          options.signal?.addEventListener(
+            "abort",
+            () => reject(new DOMException("Aborted", "AbortError")),
+            { once: true },
+          );
+        });
+      }
+      await tick(100);
+      return { ok: true, body: makeBody([new Uint8Array(250000)]) };
+    });
+    const promise = measureDownload(null, null, { deps: { fetch: fetchImpl } });
+
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(latencySignal).toBeDefined();
+    await vi.advanceTimersByTimeAsync(18000);
+    await promise;
+
+    expect(latencySignal.aborted).toBe(true);
+    expect(vi.getTimerCount()).toBe(0);
+  });
 });
 
 describe("measureUpload", () => {
@@ -188,6 +229,20 @@ describe("measureUpload", () => {
 
     expect(vi.getTimerCount()).toBe(0);
   });
+
+  it("모든 업로드 요청이 실패하면 0 Mbps 대신 오류를 던진다", async () => {
+    const fetchImpl = vi.fn(async () => {
+      await tick(100);
+      throw new TypeError("offline");
+    });
+    const promise = measureUpload(null, { deps: { fetch: fetchImpl } });
+    const rejection = expect(promise).rejects.toThrow("upload failed");
+
+    await vi.advanceTimersByTimeAsync(10000);
+
+    await rejection;
+    expect(vi.getTimerCount()).toBe(0);
+  });
 });
 
 describe("detectEnvironment", () => {
@@ -222,5 +277,20 @@ describe("detectEnvironment", () => {
     const env = await detectEnvironment({ deps: { fetch: fetchImpl } });
     expect(env.isp).toBeNull();
     expect(env.region).toBeNull();
+  });
+
+  it("환경 조회 fetch에 호출자가 전달한 AbortSignal을 전파한다", async () => {
+    const ac = new AbortController();
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({}),
+    }));
+
+    await detectEnvironment({ signal: ac.signal, deps: { fetch: fetchImpl } });
+
+    expect(fetchImpl).toHaveBeenCalledWith(
+      expect.stringContaining("/meta"),
+      expect.objectContaining({ signal: ac.signal }),
+    );
   });
 });
