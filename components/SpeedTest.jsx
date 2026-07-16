@@ -1,12 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  measurePing,
-  measureDownload,
-  measureUpload,
-  detectEnvironment,
-} from "@/features/speed-test/engine";
+import { useEffect, useState } from "react";
+import { useSpeedTest } from "@/features/speed-test/hooks/useSpeedTest";
+import { useToast } from "@/features/speed-test/hooks/useToast";
 import {
   verdict,
   grade,
@@ -90,122 +86,26 @@ function Icon({ name }) {
 }
 
 export default function SpeedTest() {
-  const [phase, setPhase] = useState("measuring"); // measuring | done | error
-  const [bigNum, setBigNum] = useState(0);
-  const [progress, setProgress] = useState(0);
-  const [phaseCap, setPhaseCap] = useState(
-    "국내 서버(서울) · 다중 스트림 측정",
-  );
-  const [subsVisible, setSubsVisible] = useState(false);
-  const [pingVal, setPingVal] = useState(null);
-  const [jitterVal, setJitterVal] = useState(null);
-  const [upLive, setUpLive] = useState(null);
-  const [env, setEnv] = useState(null);
-  const [result, setResult] = useState(null);
-  const [toastMsg, setToastMsg] = useState("");
+  const {
+    phase,
+    bigNum,
+    progress,
+    phaseCap,
+    subsVisible,
+    pingVal,
+    jitterVal,
+    upLive,
+    env,
+    result,
+    start,
+  } = useSpeedTest();
+  const { toastMsg, toast } = useToast();
   const [ctaVariant, setCtaVariant] = useState("strong");
 
-  const runningRef = useRef(false);
-  const envRef = useRef(null);
-  const toastTimer = useRef(null);
-
-  const toast = useCallback((msg) => {
-    setToastMsg(msg);
-    clearTimeout(toastTimer.current);
-    toastTimer.current = setTimeout(() => setToastMsg(""), 2200);
-  }, []);
-
-  const run = useCallback(async () => {
-    if (runningRef.current) {
-      toast("아직 측정을 마무리하는 중이에요");
-      return;
-    }
-    runningRef.current = true;
-
-    setPhase("measuring");
-    setResult(null);
-    setBigNum(0);
-    setProgress(0);
-    setSubsVisible(false);
-    setPingVal(null);
-    setJitterVal(null);
-    setUpLive(null);
-
-    track("test_started", {
-      device: envRef.current?.device,
-      conn: envRef.current?.connType,
-    });
-    const t0 = performance.now();
-
-    // 환경 감지 (병렬, FR-4)
-    detectEnvironment().then((e) => {
-      envRef.current = e;
-      setEnv(e);
-    });
-
-    try {
-      // 핑(병렬 버스트) + 다운로드 동시 시작 — 접속 즉시 수치 표시 (fast.com 방식)
-      setPhaseCap("국내 서버 · 다중 스트림 측정");
-      const pingPromise = measurePing(5)
-        .then((p) => {
-          setPingVal(p.ping);
-          setJitterVal(p.jitter);
-          setSubsVisible(true);
-          return p;
-        })
-        .catch(() => ({ ping: 0, jitter: 0 }));
-
-      const dl = await measureDownload(({ mbps, elapsedMs }) => {
-        setBigNum(mbps);
-        // 속도감 있는 진행률: 지수 ease-out — 3초 ~66%, 5초 ~84%, 7초 ~92%, 완료 시 100%
-        const frac = Math.min(0.97, 1 - Math.exp(-elapsedMs / 2800));
-        setProgress(frac * 100);
-      });
-      setBigNum(dl.mbps);
-      const pingRes = await pingPromise;
-
-      // 다운로드 완료 = 결과 화면 즉시 표시
-      const r = {
-        down: dl.mbps,
-        up: null,
-        ping: pingRes.ping,
-        jitter: pingRes.jitter,
-        loadedLatency: dl.loadedLatency,
-      };
-      setResult(r);
-      setProgress(100);
-      setPhase("done");
-
-      // 3) 업로드 — 백그라운드 측정 후 채워넣기
-      const ul = await measureUpload(({ mbps }) => setUpLive(mbps));
-      setResult((prev) => (prev ? { ...prev, up: ul.mbps } : prev));
-      track("test_completed", {
-        down: r.down,
-        up: ul.mbps,
-        ping: r.ping,
-        jitter: r.jitter,
-        isp: envRef.current?.isp,
-        region: envRef.current?.region,
-        durationMs: Math.round(performance.now() - t0),
-      });
-    } catch (e) {
-      setPhaseCap("측정에 실패했어요 — 네트워크 연결을 확인해 주세요");
-      track("test_abandoned", {
-        atSec: Math.round((performance.now() - t0) / 1000),
-        error: String(e),
-      });
-    } finally {
-      runningRef.current = false;
-    }
-  }, [toast]);
-
-  // 자동 시작 (FR-1) — StrictMode 이중 실행 가드는 runningRef가 담당
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("cta") === "weak") setCtaVariant("weak");
-    run();
-    return () => clearTimeout(toastTimer.current);
-  }, [run]);
+  }, []);
 
   // ---------- 파생값 ----------
   const done = phase === "done" && result;
@@ -322,7 +222,20 @@ export default function SpeedTest() {
           </div>
 
           <div className="status">
-            {!done ? (
+            {phase === "error" ? (
+              <div>
+                <div className="grade-t" role="alert">
+                  측정에 실패했어요
+                </div>
+                <div className="grade-s">네트워크 연결을 확인해 주세요</div>
+                <button
+                  className="btn btn-md btn-outline-assist restart"
+                  onClick={start}
+                >
+                  다시 시도하기
+                </button>
+              </div>
+            ) : !done ? (
               <div>
                 <div className="measuring-line">
                   측정 중
@@ -345,7 +258,7 @@ export default function SpeedTest() {
                 <div className="grade-s">{gradeS}</div>
                 <button
                   className="btn btn-md btn-outline-assist restart"
-                  onClick={run}
+                  onClick={start}
                 >
                   다시 측정하기
                 </button>
@@ -394,7 +307,7 @@ export default function SpeedTest() {
         )}
 
         {/* AD SLOT 1: 측정 중 하단 (FR-12, 지연 로드) */}
-        {!done && (
+        {!done && phase !== "error" && (
           <div className="ad-wrap ad-measuring">
             <div className="ad">
               <span className="tag">광고</span>
