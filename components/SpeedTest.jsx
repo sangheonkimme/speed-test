@@ -15,11 +15,9 @@ import {
 import { commerce } from "@/features/speed-test/domain/recommendations";
 import { fmtSpeed } from "@/features/speed-test/domain/format";
 import { track } from "@/features/speed-test/analytics";
+import { PARTNER_URL } from "@/features/speed-test/config";
 
 const RING_C = 779.11;
-
-// 제휴 아웃링크 (FR-10 v1): 계약 후 URL 교체
-const PARTNER_URL = "";
 
 const TONE = { ok: "var(--ok)", warn: "var(--warn)", bad: "var(--bad)" };
 
