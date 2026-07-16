@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { verdict, grade, usages } from "@/lib/logic.js";
+import { verdict, grade, usages } from "../domain/assessment.js";
 
 // 현재 판정 규칙을 그대로 고정하는 characterization test — 임계값 변경 금지
 describe("verdict", () => {

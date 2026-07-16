@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fmtSpeed } from "@/lib/logic.js";
+import { fmtSpeed } from "../domain/format.js";
 
 // 속도 표기 규칙을 고정하는 characterization test
 describe("fmtSpeed", () => {

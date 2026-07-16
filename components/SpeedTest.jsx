@@ -7,7 +7,14 @@ import {
   measureUpload,
   detectEnvironment,
 } from "@/lib/engine";
-import { verdict, grade, usages, commerce, track, fmtSpeed } from "@/lib/logic";
+import {
+  verdict,
+  grade,
+  usages,
+} from "@/features/speed-test/domain/assessment";
+import { commerce } from "@/features/speed-test/domain/recommendations";
+import { fmtSpeed } from "@/features/speed-test/domain/format";
+import { track } from "@/features/speed-test/analytics";
 
 const RING_C = 779.11;
 

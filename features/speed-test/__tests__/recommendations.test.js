@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { commerce, verdict } from "@/lib/logic.js";
+import { commerce } from "../domain/recommendations.js";
+import { verdict } from "../domain/assessment.js";
 
 // 커머스 추천 노출 조건을 고정하는 characterization test
 describe("commerce", () => {
