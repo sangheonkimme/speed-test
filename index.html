@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>스피드체크 — 인터넷 속도 측정</title>
+<meta name="description" content="접속 즉시 자동 측정. 무료·무가입·무설치 인터넷 속도 측정 — 다운로드·업로드·핑·지터까지 3초 안에 확인하세요.">
+<meta property="og:title" content="스피드체크 — 인터넷 속도 측정">
+<meta property="og:description" content="접속 즉시 자동 측정. 무료·무가입·무설치.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='7' fill='%230066FF'/%3E%3Cpath d='M13 4 6.5 13H11l-.8 7L17 11h-4.5L13 4Z' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/wanteddev/wanted-sans@v1.0.4/packages/wanted-sans/fonts/webfonts/variable/split/WantedSansVariable.css">
+<style>
+:root{
+  --font-sans:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --font-brand:"Wanted Sans Variable","Wanted Sans","Pretendard Variable",-apple-system,sans-serif;
+  --primary:#0066FF;
+  --label-strong:#111;--label-normal:#171719;
+  --label-neutral:rgba(46,47,51,.88);--label-alt:rgba(55,56,60,.61);--label-assist:rgba(55,56,60,.28);
+  --line:rgba(112,115,124,.16);--line-dash:rgba(112,115,124,.22);
+  --fill:rgba(112,115,124,.08);--fill-10:rgba(112,115,124,.10);--fill-12:rgba(112,115,124,.12);--fill-strong:rgba(112,115,124,.28);
+  --bg-alt:#f7f7f8;
+  --ok:#00BF40;--warn:#FF9F00;--bad:#FF4242;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#fff;font-family:var(--font-sans);color:var(--label-normal);-webkit-font-smoothing:antialiased}
+a{color:var(--primary);text-decoration:none}
+a:hover{text-decoration:underline}
+button{font-family:inherit;cursor:pointer}
+[hidden]{display:none!important}
+@keyframes sc-blink{0%,100%{opacity:.2}50%{opacity:1}}
+@keyframes sc-rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ---------- header ---------- */
+.hdr{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;padding:14px 22px;background:rgba(255,255,255,.86);backdrop-filter:blur(18px);box-shadow:inset 0 -1px 0 var(--line)}
+.hdr .logo{width:26px;height:26px;border-radius:8px;background:var(--primary);display:flex;align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(0,102,255,.35)}
+.hdr .brand{font-family:var(--font-brand);font-weight:700;font-size:20px;letter-spacing:-.03em;color:var(--label-strong)}
+.hdr .env{display:flex;align-items:center;gap:6px;padding:6px 11px;border-radius:999px;background:var(--fill);font-size:12.5px;font-weight:500;color:var(--label-neutral)}
+.hdr .env .dot{width:6px;height:6px;border-radius:50%;background:var(--primary)}
+
+.wrap{width:100%;max-width:1000px;margin:0 auto;padding:0 20px 64px;flex:1}
+.page{min-height:100vh;display:flex;flex-direction:column;background:#fff}
+
+/* ---------- hero ---------- */
+.hero{display:flex;flex-direction:column;align-items:center;padding:44px 0 8px}
+.gauge{position:relative;width:min(300px,72vw);aspect-ratio:1/1}
+.gauge svg{width:100%;height:100%;display:block}
+.gauge .ring-fg{transition:stroke-dashoffset 120ms linear,stroke 300ms ease}
+.gauge .center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.gauge .num{font-weight:700;font-size:clamp(60px,15vw,104px);line-height:.92;letter-spacing:-.04em;font-variant-numeric:tabular-nums;color:var(--label-strong)}
+.gauge .unit{margin-top:6px;font-size:15px;font-weight:600;letter-spacing:.04em;color:var(--label-alt)}
+
+.status{margin-top:22px;min-height:72px;display:flex;flex-direction:column;align-items:center;text-align:center}
+.measuring-line{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:600;color:var(--label-neutral)}
+.dots{display:inline-flex;gap:3px}
+.dots span{width:5px;height:5px;border-radius:50%;background:var(--primary);animation:sc-blink 1s infinite}
+.dots span:nth-child(2){animation-delay:.2s}
+.dots span:nth-child(3){animation-delay:.4s}
+.pbar{width:200px;height:5px;border-radius:999px;background:var(--fill-12);margin-top:14px;overflow:hidden}
+.pbar>div{height:100%;border-radius:999px;background:var(--primary);width:0;transition:width 120ms linear}
+.pcap{margin-top:9px;font-size:12.5px;color:var(--label-assist)}
+.grade-t{font-size:22px;font-weight:700;letter-spacing:-.02em;color:var(--label-strong)}
+.grade-s{margin-top:6px;font-size:14px;color:var(--label-alt)}
+
+/* ---------- buttons (WDS 근사) ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;border-radius:10px;font-weight:600;border:none;transition:background .15s ease,opacity .15s ease}
+.btn:active{opacity:.85}
+.btn-md{height:42px;padding:0 18px;font-size:14.5px}
+.btn-lg{height:52px;padding:0 22px;font-size:16px;border-radius:12px}
+.btn-outline-assist{background:#fff;border:1px solid var(--line-dash);color:var(--label-neutral)}
+.btn-outline-assist:hover{background:var(--fill)}
+.btn-outline-primary{background:#fff;border:1px solid var(--primary);color:var(--primary)}
+.btn-outline-primary:hover{background:rgba(0,102,255,.06)}
+.btn-solid-primary{background:var(--primary);color:#fff}
+.btn-solid-primary:hover{background:#0057da}
+.btn-solid-white{background:#fff;color:var(--primary)}
+.btn-solid-white:hover{background:rgba(255,255,255,.92)}
+.btn-full{width:100%}
+.restart{margin-top:16px}
+
+/* ---------- sub metrics ---------- */
+.subs{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin:8px auto 0;max-width:520px;animation:sc-rise .4s ease both}
+.sub{flex:1;min-width:120px;padding:16px 18px;border-radius:14px;background:var(--bg-alt);text-align:center}
+.sub .k{font-size:12.5px;font-weight:600;color:var(--label-alt)}
+.sub .v{margin-top:5px;font-size:26px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:var(--label-strong)}
+.sub .v small{font-size:13px;font-weight:600;color:var(--label-alt)}
+
+/* ---------- ad slots ---------- */
+.ad-wrap{max-width:728px;margin:28px auto 0}
+.ad{display:flex;align-items:center;justify-content:center;gap:8px;border-radius:12px;border:1px dashed var(--line-dash);background:var(--bg-alt);position:relative}
+.ad .tag{position:absolute;top:8px;left:12px;font-size:10px;font-weight:600;letter-spacing:.02em;color:var(--label-assist)}
+.ad .ph{font-size:13px;color:var(--label-assist)}
+#ad-measuring .ad{height:104px}
+#ad-bottom{margin-top:24px}
+#ad-bottom .ad{height:118px}
+
+/* ---------- results ---------- */
+.results{display:flex;flex-wrap:wrap;gap:20px;margin-top:34px;align-items:flex-start;animation:sc-rise .4s ease both}
+.col-main{flex:2;min-width:330px;display:flex;flex-direction:column;gap:16px}
+.col-rail{flex:1;min-width:290px;display:flex;flex-direction:column;gap:16px}
+.card{border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:0 1px 3px rgba(23,23,23,.04);background:#fff}
+.card h3{margin:0 0 4px;font-size:16px;font-weight:700;letter-spacing:-.01em}
+.card .sub-t{font-size:13px;color:var(--label-alt);margin-bottom:8px}
+
+.usage-row{display:flex;align-items:center;gap:12px;padding:13px 0;box-shadow:inset 0 -1px 0 var(--fill-10)}
+.usage-row:last-child{box-shadow:none}
+.usage-row .ic{display:inline-flex;flex-shrink:0}
+.usage-row .n{flex:1;font-size:14.5px;font-weight:600;color:var(--label-strong)}
+.usage-row .lv{font-size:13px;font-weight:600}
+
+.vhead{display:flex;align-items:center;gap:9px;margin-bottom:14px}
+.vchip{padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700}
+.vdesc{font-size:14px;color:var(--label-neutral);margin-bottom:16px;line-height:1.5}
+.bars{display:flex;flex-direction:column;gap:11px}
+.bar-k{display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px}
+.bar-k .l{font-weight:600;color:var(--label-strong)}
+.bar-k .l.dim,.bar-k .r.dim{color:var(--label-alt)}
+.bar-k .r{font-weight:700;font-variant-numeric:tabular-nums}
+.bar{height:10px;border-radius:999px;background:var(--fill-10);overflow:hidden}
+.bar>div{height:100%;border-radius:999px;transition:width .6s ease}
+
+.cta-strong{border-radius:16px;padding:24px;background:linear-gradient(135deg,#0066FF,#0047b3);color:#fff;box-shadow:0 10px 30px rgba(0,102,255,.28)}
+.cta-strong .eyebrow{font-size:13px;font-weight:600;opacity:.9;margin-bottom:6px}
+.cta-strong .t{font-size:21px;font-weight:700;letter-spacing:-.02em;line-height:1.35;margin-bottom:6px}
+.cta-strong .d{font-size:14px;opacity:.92;line-height:1.5;margin-bottom:18px}
+.cta-strong .legal{margin-top:12px;font-size:11.5px;opacity:.8;text-align:center}
+.cta-weak{border:1px solid var(--line);border-radius:16px;padding:18px 20px;display:flex;align-items:center;gap:14px;background:#fff}
+.cta-weak .t{font-size:15px;font-weight:700;letter-spacing:-.01em;margin-bottom:3px}
+.cta-weak .d{font-size:13px;color:var(--label-alt)}
+.cta-weak .grow{flex:1}
+
+.share-card{border-radius:14px;padding:20px;background:#111;color:#fff;text-align:center;margin-bottom:14px}
+.share-card .loc{font-size:12px;opacity:.7;margin-bottom:4px}
+.share-card .n{font-size:40px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.share-card .n small{font-size:15px;font-weight:600;opacity:.8}
+.share-card .rank{margin-top:6px;display:inline-block;padding:4px 12px;border-radius:999px;background:rgba(255,255,255,.14);font-size:12.5px;font-weight:600}
+.share-btns{display:flex;gap:8px}
+.share-btns .grow{flex:1}
+
+.cmr{display:flex;flex-direction:column;gap:10px}
+.cm{display:flex;gap:12px;padding:13px;border-radius:12px;background:var(--bg-alt);cursor:pointer;border:none;text-align:left;width:100%}
+.cm:hover{background:var(--fill-12)}
+.cm .ic{width:44px;height:44px;border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;color:var(--primary);flex-shrink:0;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.cm .b{flex:1;min-width:0}
+.cm .tag{font-size:11px;font-weight:600;color:rgba(55,56,60,.4)}
+.cm .t{font-size:13.5px;font-weight:600;line-height:1.35;color:var(--label-strong);margin:2px 0 3px}
+.cm .d{font-size:12px;color:var(--label-alt);line-height:1.4}
+
+.foot{text-align:center;margin-top:22px;font-size:11.5px;color:var(--label-assist);line-height:1.6}
+
+/* toast */
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(8px);background:#111;color:#fff;padding:10px 18px;border-radius:999px;font-size:13.5px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .25s ease,transform .25s ease;z-index:50}
+.toast.on{opacity:1;transform:translateX(-50%)}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="hdr">
+    <div style="display:flex;align-items:center;gap:9px">
+      <div class="logo"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z" fill="#fff"/></svg></div>
+      <span class="brand">스피드체크</span>
+    </div>
+    <div style="flex:1"></div>
+    <div class="env"><span class="dot"></span><span id="env-text">환경 확인 중…</span></div>
+  </header>
+
+  <div class="wrap">
+
+    <!-- HERO -->
+    <div class="hero">
+      <div class="gauge">
+        <svg viewBox="0 0 280 280">
+          <circle cx="140" cy="140" r="124" fill="none" stroke="var(--fill-10)" stroke-width="15"></circle>
+          <circle id="ring" class="ring-fg" cx="140" cy="140" r="124" fill="none" stroke="var(--primary)" stroke-width="15" stroke-linecap="round" stroke-dasharray="779.11" stroke-dashoffset="779.11" transform="rotate(-90 140 140)"></circle>
+        </svg>
+        <div class="center">
+          <div class="num" id="big-num">0</div>
+          <div class="unit">Mbps · 다운로드</div>
+        </div>
+      </div>
+
+      <div class="status">
+        <div id="st-measuring">
+          <div class="measuring-line" style="justify-content:center">측정 중<span class="dots"><span></span><span></span><span></span></span></div>
+          <div class="pbar"><div id="pbar-fill"></div></div>
+          <div class="pcap" id="phase-cap">국내 서버(서울) · 다중 스트림 측정</div>
+        </div>
+        <div id="st-done" hidden>
+          <div class="grade-t" id="grade-t"></div>
+          <div class="grade-s" id="grade-s"></div>
+          <button class="btn btn-md btn-outline-assist restart" id="btn-restart">다시 측정하기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUB METRICS -->
+    <div class="subs" id="subs" hidden>
+      <div class="sub"><div class="k">업로드</div><div class="v"><span id="v-up">–</span> <small>Mbps</small></div></div>
+      <div class="sub"><div class="k">지연(핑)</div><div class="v"><span id="v-ping">–</span> <small>ms</small></div></div>
+      <div class="sub"><div class="k">지터</div><div class="v"><span id="v-jitter">–</span> <small>ms</small></div></div>
+    </div>
+
+    <!-- AD SLOT 1: 측정 중 (지연 로드) -->
+    <div class="ad-wrap" id="ad-measuring">
+      <div class="ad"><span class="tag">광고</span><span class="ph">광고 영역 · 측정 스트림 우선(지연 로드)</span></div>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="results" id="results" hidden>
+      <div class="col-main">
+
+        <div class="card" style="padding-bottom:8px">
+          <h3>용도별 적합도</h3>
+          <div class="sub-t">지금 속도로 무엇까지 쾌적할까요?</div>
+          <div id="usage-list"></div>
+        </div>
+
+        <div class="card">
+          <div class="vhead">
+            <h3 style="margin:0">비교 진단</h3>
+            <span class="vchip" id="vchip"></span>
+          </div>
+          <div class="vdesc" id="vdesc"></div>
+          <div class="bars">
+            <div>
+              <div class="bar-k"><span class="l">내 속도</span><span class="r" id="self-val"></span></div>
+              <div class="bar"><div id="self-bar"></div></div>
+            </div>
+            <div>
+              <div class="bar-k"><span class="l dim" id="avg-label">평균</span><span class="r dim" id="avg-val"></span></div>
+              <div class="bar"><div id="avg-bar" style="background:var(--fill-strong)"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CTA 강조형 -->
+        <div class="cta-strong" id="cta-strong" hidden>
+          <div class="eyebrow">측정 결과 기반 추천</div>
+          <div class="t">이 요금제면 최대 2배 빨라져요</div>
+          <div class="d" id="cta-desc"></div>
+          <button class="btn btn-lg btn-solid-white btn-full" id="btn-cta">현금 사은품 비교하기</button>
+          <div class="legal">측정 지역·현재 통신사·속도가 제휴 대리점에 전달돼요 · 광고</div>
+        </div>
+        <!-- CTA 저강도형 -->
+        <div class="cta-weak" id="cta-weak" hidden>
+          <div class="grow">
+            <div class="t">더 빠른 요금제가 궁금하다면</div>
+            <div class="d" id="cta-weak-desc">현금 사은품 비교 · 광고</div>
+          </div>
+          <button class="btn btn-md btn-outline-primary" id="btn-cta-weak">비교하기</button>
+        </div>
+
+      </div>
+
+      <div class="col-rail">
+
+        <div class="card" style="padding:20px">
+          <div class="share-card">
+            <div class="loc" id="share-loc"></div>
+            <div class="n"><span id="share-num"></span><small> Mbps</small></div>
+            <div class="rank" id="share-rank"></div>
+          </div>
+          <div class="share-btns">
+            <div class="grow"><button class="btn btn-md btn-solid-primary btn-full" id="btn-share">결과 공유</button></div>
+            <button class="btn btn-md btn-outline-assist" id="btn-url">URL</button>
+          </div>
+        </div>
+
+        <div class="card" id="commerce-card" style="padding:20px" hidden>
+          <h3 style="font-size:15px;margin-bottom:2px">측정 결과 맞춤 추천</h3>
+          <div class="sub-t" style="font-size:12.5px;margin-bottom:14px">문제 진단에 근거한 제품이에요</div>
+          <div class="cmr" id="commerce-list"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- AD SLOT 2: 결과 최하단 -->
+    <div class="ad-wrap" id="ad-bottom" hidden>
+      <div class="ad"><span class="tag">광고</span><span class="ph">광고 영역</span></div>
+    </div>
+
+    <div class="foot" id="foot" hidden>
+      측정은 언제나 무료·무가입·무설치예요 · 측정값은 비식별로만 집계돼요<br>
+      <a href="#" onclick="return false">측정 방법론</a> · <a href="#" onclick="return false">개인정보 처리방침</a> · <a href="#" onclick="return false">제휴 링크 고지</a>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/engine.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
