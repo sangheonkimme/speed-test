@@ -1,7 +1,7 @@
 import { StrictMode } from "react";
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { useSpeedTest } from "../hooks/useSpeedTest.js";
+import { isAutomatedAgent, useSpeedTest } from "../hooks/useSpeedTest.js";
 import { useToast } from "../hooks/useToast.js";
 
 function deferred() {
@@ -44,6 +44,43 @@ function createMockEngine() {
 }
 
 const flush = () => act(async () => {});
+
+function withUserAgent(userAgent, callback) {
+  const descriptor = Object.getOwnPropertyDescriptor(navigator, "userAgent");
+  Object.defineProperty(navigator, "userAgent", {
+    configurable: true,
+    value: userAgent,
+  });
+  try {
+    callback();
+  } finally {
+    if (descriptor) {
+      Object.defineProperty(navigator, "userAgent", descriptor);
+    } else {
+      delete navigator.userAgent;
+    }
+  }
+}
+
+describe("isAutomatedAgent", () => {
+  it("명시적인 검색봇과 Lighthouse 사용자 에이전트를 감지한다", () => {
+    withUserAgent("Mozilla/5.0 Chrome-Lighthouse", () => {
+      expect(isAutomatedAgent()).toBe(true);
+    });
+    withUserAgent("Mozilla/5.0 (compatible; Googlebot/2.1)", () => {
+      expect(isAutomatedAgent()).toBe(true);
+    });
+  });
+
+  it("CUBOT 기기와 일반 브라우저를 검색봇으로 오인하지 않는다", () => {
+    withUserAgent("Mozilla/5.0 (Linux; Android 10; CUBOT_X19)", () => {
+      expect(isAutomatedAgent()).toBe(false);
+    });
+    withUserAgent("Mozilla/5.0 AppleWebKit/537.36 Chrome/126 Safari/537.36", () => {
+      expect(isAutomatedAgent()).toBe(false);
+    });
+  });
+});
 
 describe("useSpeedTest", () => {
   it("마운트 시 자동으로 측정을 시작한다", async () => {

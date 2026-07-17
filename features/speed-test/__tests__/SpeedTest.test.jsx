@@ -39,6 +39,31 @@ afterEach(() => {
 });
 
 describe("SpeedTest 화면", () => {
+  it("자동화 환경에서는 자동 측정을 건너뛰고 수동 시작 버튼을 제공한다", async () => {
+    const webdriverDescriptor = Object.getOwnPropertyDescriptor(navigator, "webdriver");
+    Object.defineProperty(navigator, "webdriver", {
+      configurable: true,
+      value: true,
+    });
+    const user = userEvent.setup();
+
+    try {
+      render(<SpeedTest />);
+
+      const startButton = screen.getByRole("button", { name: "측정 시작하기" });
+      expect(engine.measureDownload).not.toHaveBeenCalled();
+
+      await user.click(startButton);
+      expect(engine.measureDownload).toHaveBeenCalledTimes(1);
+    } finally {
+      if (webdriverDescriptor) {
+        Object.defineProperty(navigator, "webdriver", webdriverDescriptor);
+      } else {
+        delete navigator.webdriver;
+      }
+    }
+  });
+
   it("헤더에는 시·군·구 대신 IP 기준 광역 지역 추정값만 표시한다", async () => {
     render(<SpeedTest />);
 

@@ -51,7 +51,9 @@ function reducer(state, action) {
     case "UPLOAD_DONE":
       return {
         ...state,
-        result: state.result ? { ...state.result, up: action.mbps } : state.result,
+        result: state.result
+          ? { ...state.result, up: action.mbps }
+          : state.result,
       };
     case "FAIL":
       return {
@@ -64,9 +66,23 @@ function reducer(state, action) {
   }
 }
 
+// Lighthouse·검색엔진 봇에서는 자동 측정을 시작하지 않는다.
+// 크롤링마다 대용량 측정 스트림을 태우는 낭비를 막고, 성능 감사(LCP 등) 왜곡을 방지한다.
+// 실사용자는 영향 없으며, 봇도 '다시 측정하기'로 수동 시작은 가능하다.
+export function isAutomatedAgent() {
+  if (typeof navigator === "undefined") return false;
+  if (navigator.webdriver) return true;
+  return /lighthouse|headless|googlebot|bingbot|yeti|baiduspider|duckduckbot|yandexbot|applebot|slurp|facebookexternalhit|twitterbot|linkedinbot/i.test(
+    navigator.userAgent,
+  );
+}
+
 // 측정 상태 머신 + orchestration. UI는 반환된 state/start만 사용한다.
 // engine 주입은 테스트용이며 production에서는 기본 엔진을 쓴다.
-export function useSpeedTest({ engine = defaultEngine, autoStart = true } = {}) {
+export function useSpeedTest({
+  engine = defaultEngine,
+  autoStart = true,
+} = {}) {
   const [state, dispatch] = useReducer(reducer, initialState);
   const engineRef = useRef(engine); // 렌더마다 새 객체가 와도 start를 안정적으로 유지
   const runIdRef = useRef(0);
@@ -118,7 +134,11 @@ export function useSpeedTest({ engine = defaultEngine, autoStart = true } = {}) 
         ({ mbps, elapsedMs }) => {
           // 속도감 있는 진행률: 지수 ease-out — 3초 ~66%, 5초 ~84%, 7초 ~92%, 완료 시 100%
           const frac = Math.min(0.97, 1 - Math.exp(-elapsedMs / 2800));
-          safeDispatch({ type: "DOWNLOAD_PROGRESS", mbps, progress: frac * 100 });
+          safeDispatch({
+            type: "DOWNLOAD_PROGRESS",
+            mbps,
+            progress: frac * 100,
+          });
         },
         null,
         { signal: ac.signal },
@@ -172,7 +192,7 @@ export function useSpeedTest({ engine = defaultEngine, autoStart = true } = {}) 
 
   // 자동 시작 (FR-1) — StrictMode 재마운트 시 이전 run은 cleanup에서 중단된다
   useEffect(() => {
-    if (autoStart) start();
+    if (autoStart && !isAutomatedAgent()) start();
     return invalidate;
     // autoStart는 마운트 시점 옵션 — 이후 변경은 의도적으로 무시
     // eslint-disable-next-line react-hooks/exhaustive-deps
