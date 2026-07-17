@@ -13,10 +13,10 @@ export function ResultPanel({ result, env, gradeTitle, recommendations, ctaVaria
       <div className="results">
         <div className="col-main">
           <UsageCard items={usages(result.down, result.ping, result.jitter)} />
-          {showCta && <ConversionCta variant={ctaVariant} region={env?.region} onClick={onCtaClick} />}
+          {showCta && <ConversionCta variant={ctaVariant} onClick={onCtaClick} />}
         </div>
         <div className="col-rail">
-          <ShareCard location={[env?.region, env?.isp || "내 통신사"].filter(Boolean).join(" · ")} speed={fmtSpeed(result.down)} grade={gradeTitle} onShare={onShare} />
+          <ShareCard location={env?.isp || "내 통신사"} speed={fmtSpeed(result.down)} grade={gradeTitle} onShare={onShare} />
           <CommerceRecommendations items={recommendations} onSelect={onRecommendation} />
         </div>
       </div>

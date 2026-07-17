@@ -19,7 +19,10 @@ beforeEach(() => {
     device: "PC",
     connType: "WiFi/유선",
     isp: "KT",
-    region: "서울",
+    region: "Gyeonggi-do",
+    city: "Goyang-si",
+    locationSource: "ip",
+    locationAccuracy: "approximate",
   });
   engine.measurePing.mockResolvedValue({ ping: 20, jitter: 3.2, samples: [] });
   engine.measureDownload.mockResolvedValue({
@@ -36,6 +39,15 @@ afterEach(() => {
 });
 
 describe("SpeedTest 화면", () => {
+  it("헤더에는 시·군·구 대신 IP 기준 광역 지역 추정값만 표시한다", async () => {
+    render(<SpeedTest />);
+
+    expect(
+      await screen.findByText("KT · IP 기준 Gyeonggi-do 추정 · WiFi/유선"),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/Goyang-si/)).not.toBeInTheDocument();
+  });
+
   it("측정 중 상태를 표시한다", async () => {
     engine.measureDownload.mockReturnValue(pending());
     render(<SpeedTest />);
@@ -96,6 +108,8 @@ describe("SpeedTest 화면", () => {
     render(<SpeedTest />);
 
     expect(await screen.findByText("비교하기")).toBeInTheDocument();
+    expect(screen.getByText("현재 통신사·측정 속도 기준 현금 사은품 비교 · 광고")).toBeInTheDocument();
+    expect(screen.queryByText(/Gyeonggi-do 기준/)).not.toBeInTheDocument();
     expect(
       screen.queryByText("현금 사은품 비교하기"),
     ).not.toBeInTheDocument();
@@ -129,6 +143,9 @@ describe("SpeedTest 화면", () => {
 
     await waitFor(() => expect(writeText).toHaveBeenCalledTimes(1));
     expect(writeText.mock.calls[0][0]).toContain("내 인터넷 속도");
+    expect(writeText.mock.calls[0][0]).toContain("KT");
+    expect(writeText.mock.calls[0][0]).not.toContain("Gyeonggi-do");
+    expect(writeText.mock.calls[0][0]).not.toContain("Goyang-si");
     expect(
       await screen.findByText("결과가 복사됐어요 — 붙여넣어 공유하세요"),
     ).toBeInTheDocument();

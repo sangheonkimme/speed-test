@@ -24,8 +24,9 @@ export default function SpeedTest() {
   const hero = fmtSpeed(done ? test.result.down : test.bigNum);
   const showCta = Boolean(done && assessment?.text !== "정상");
   const recommendations = done ? commerce(assessment, test.result, test.env) : [];
+  const estimatedRegion = test.env?.region ? `IP 기준 ${test.env.region} 추정` : null;
   const envText = test.env
-    ? [test.env.isp, test.env.region, test.env.connType].filter(Boolean).join(" · ")
+    ? [test.env.isp, estimatedRegion, test.env.connType].filter(Boolean).join(" · ")
     : "환경 확인 중…";
 
   useEffect(() => {
@@ -42,7 +43,6 @@ export default function SpeedTest() {
     track("compare_cta_click", { verdict: assessment?.text, variant: ctaVariant });
     if (!PARTNER_URL) return toast("제휴 대리점 연결 준비 중이에요");
     const url = new URL(PARTNER_URL);
-    url.searchParams.set("region", test.env?.region || "");
     url.searchParams.set("isp", test.env?.isp || "");
     url.searchParams.set("mbps", Math.round(test.result.down));
     window.open(url.toString(), "_blank", "noopener");
@@ -51,7 +51,8 @@ export default function SpeedTest() {
   const handleShare = async (channel) => {
     if (!test.result) return;
     const speed = fmtSpeed(test.result.down);
-    const text = `내 인터넷 속도: ${speed.v}${speed.u} (${[test.env?.region, test.env?.isp].filter(Boolean).join(" · ")}) — 스피드체크에서 바로 측정했어요`;
+    const ispText = test.env?.isp ? ` (${test.env.isp})` : "";
+    const text = `내 인터넷 속도: ${speed.v}${speed.u}${ispText} — 스피드체크에서 바로 측정했어요`;
     track("result_shared", { channel });
     if (channel === "native" && navigator.share) {
       try {

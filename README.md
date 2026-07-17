@@ -55,6 +55,8 @@ features/
 
 `app`은 `features/speed-test/index.js`의 공개 API만 사용합니다. feature 내부 의존성은 화면 → hook/domain → engine 방향으로 유지하며, leaf UI 컴포넌트는 측정 엔진이나 analytics를 직접 호출하지 않습니다.
 
+환경 정보의 지역은 Cloudflare가 공인 IP에서 추정한 광역 지역만 사용합니다. 시·군·구는 실제 접속 위치와 다를 가능성이 있어 화면·공유·제휴 파라미터에서 제외하며, 광역 지역을 표시할 때는 `IP 기준 … 추정`으로 명시합니다.
+
 `design/`은 `.gitignore` 대상인 로컬 디자인 시안 디렉터리이며 빌드·배포 코드에 포함되지 않습니다.
 
 ## 운영 전 교체 필요

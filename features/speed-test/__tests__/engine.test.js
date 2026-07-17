@@ -246,7 +246,7 @@ describe("measureUpload", () => {
 });
 
 describe("detectEnvironment", () => {
-  it("meta 응답으로 ISP·지역을 매핑한다", async () => {
+  it("meta 응답에서 ISP와 광역 지역만 매핑하고 시·군·구는 제외한다", async () => {
     const fetchImpl = vi.fn(async () => ({
       ok: true,
       json: async () => ({
@@ -258,7 +258,10 @@ describe("detectEnvironment", () => {
     const env = await detectEnvironment({ deps: { fetch: fetchImpl } });
     expect(env.device).toBe("PC"); // jsdom 기본 UA는 데스크톱
     expect(env.isp).toBe("KT");
-    expect(env.region).toBe("Seoul Gangnam");
+    expect(env.region).toBe("Seoul");
+    expect(env.region).not.toContain("Gangnam");
+    expect(env.locationSource).toBe("ip");
+    expect(env.locationAccuracy).toBe("approximate");
   });
 
   it("meta 조회 실패 시 isp/region 없이 환경만 반환한다", async () => {

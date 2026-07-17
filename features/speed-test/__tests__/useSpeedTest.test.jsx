@@ -26,6 +26,8 @@ function createMockEngine() {
       connType: "WiFi/유선",
       isp: "KT",
       region: "서울",
+      locationSource: "ip",
+      locationAccuracy: "approximate",
     })),
     measurePing: vi.fn(async () => ({ ping: 20, jitter: 3.2, samples: [] })),
     measureDownload: vi.fn((onProgress, onLoadedLatency, options = {}) => {
@@ -92,6 +94,34 @@ describe("useSpeedTest", () => {
       engine.uploads()[0].d.resolve({ mbps: 12.3, durationMs: 8000 }),
     );
     expect(result.current.result.up).toBe(12.3);
+    expect(result.current.phase).toBe("done");
+  });
+
+  it("완료 이벤트에는 IP 기반 광역 추정값의 출처와 정확도를 기록한다", async () => {
+    window.dataLayer = [];
+    const engine = createMockEngine();
+    const { result } = renderHook(() => useSpeedTest({ engine }));
+    await flush();
+
+    await act(async () =>
+      engine.downloads()[0].d.resolve({
+        mbps: 100,
+        bytes: 1,
+        durationMs: 1,
+        loadedLatency: null,
+      }),
+    );
+    await act(async () =>
+      engine.uploads()[0].d.resolve({ mbps: 20, durationMs: 1 }),
+    );
+
+    const completed = window.dataLayer.find((item) => item.event === "test_completed");
+    expect(completed).toMatchObject({
+      region: "서울",
+      locationSource: "ip",
+      locationAccuracy: "approximate",
+    });
+    expect(completed).not.toHaveProperty("city");
     expect(result.current.phase).toBe("done");
   });
 

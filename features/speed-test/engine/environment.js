@@ -19,14 +19,20 @@ export async function detectEnvironment(options = {}) {
     connType = isMobile ? "WiFi/셀룰러" : "WiFi/유선";
   }
 
-  // IP 기반 ISP·지역 (시·군·구 수준, 정밀 위치 수집 안 함)
+  // IP 기반 ISP·광역 지역 추정. city는 실제 접속 위치와 다를 수 있어 사용하지 않는다.
   let isp = null,
-    region = null;
+    region = null,
+    locationSource = null,
+    locationAccuracy = null;
   try {
     const res = await deps.fetch(`${BASE}/meta`, { signal: options.signal });
     if (!res.ok) throw new Error(`meta request failed: ${res.status}`);
     const meta = await res.json();
-    region = [meta.region, meta.city].filter(Boolean).join(" ");
+    region = meta.region || null;
+    if (region) {
+      locationSource = "ip";
+      locationAccuracy = "approximate";
+    }
     const org = (meta.asOrganization || "").toLowerCase();
     if (
       org.includes("korea telecom") ||
@@ -52,5 +58,12 @@ export async function detectEnvironment(options = {}) {
     // ISP·지역은 부가 정보 — 조회 실패 시 null로 두고 측정은 계속한다
   }
 
-  return { device: isMobile ? "모바일" : "PC", connType, isp, region };
+  return {
+    device: isMobile ? "모바일" : "PC",
+    connType,
+    isp,
+    region,
+    locationSource,
+    locationAccuracy,
+  };
 }

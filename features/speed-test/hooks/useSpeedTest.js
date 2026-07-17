@@ -150,6 +150,8 @@ export function useSpeedTest({ engine = defaultEngine, autoStart = true } = {}) 
         jitter: r.jitter,
         isp: envRef.current?.isp,
         region: envRef.current?.region,
+        locationSource: envRef.current?.locationSource,
+        locationAccuracy: envRef.current?.locationAccuracy,
         durationMs: Math.round(performance.now() - t0),
       });
     } catch (e) {
