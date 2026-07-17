@@ -29,6 +29,11 @@ export const metadata = {
     description: '접속 즉시 자동 측정. 무료·무가입·무설치.',
   },
   robots: { index: true, follow: true },
+  verification: {
+    other: {
+      'naver-site-verification': '20068b7154c22a139ce0059aedda3372ef568b9d',
+    },
+  },
 };
 
 export const viewport = {
