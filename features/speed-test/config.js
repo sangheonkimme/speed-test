@@ -1,6 +1,6 @@
 /* 측정 엔드포인트·파라미터·제휴 설정 — 값 변경은 제품 결정 사항 */
 
-// 엔드포인트: Cloudflare Speed (Anycast, 서울 PoP)
+// 엔드포인트: Cloudflare Speed Anycast. 실제 접속 엣지와 경로는 네트워크 상황에 따라 달라진다.
 export const BASE = "https://speed.cloudflare.com";
 export const DOWN = (bytes) => `${BASE}/__down?bytes=${bytes}`;
 export const UP = `${BASE}/__up`;

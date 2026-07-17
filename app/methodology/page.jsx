@@ -3,7 +3,7 @@ import Link from 'next/link';
 export const metadata = {
   title: '측정 방법론',
   description:
-    '스피드체크가 인터넷 속도를 측정하는 방식 — 국내 PoP 기반 HTTPS 다중 스트림, 15초 상한, 수렴 시 조기 종료.',
+    '스피드체크가 인터넷 속도를 측정하는 방식 — Cloudflare 엣지 기반 HTTPS 다중 스트림, 15초 상한, 수렴 시 조기 종료.',
   alternates: { canonical: '/methodology' },
 };
 
@@ -16,8 +16,8 @@ export default function MethodologyPage() {
 
       <h2>측정 서버</h2>
       <p>
-        Cloudflare의 속도 측정 엔드포인트를 사용합니다. Cloudflare는 서울에 접속 지점(PoP)을 운영하고 있어
-        국내 이용자는 일반적으로 국내 구간에서 측정됩니다. 해외 서버 측정으로 인한 과소 측정을 방지하기 위한 선택입니다.
+        Cloudflare의 Anycast 속도 측정 엔드포인트를 사용합니다. 일반적으로 네트워크에서 가까운 Cloudflare 엣지에
+        연결되지만, 실제 접속 서버와 네트워크 경로는 통신사 라우팅과 접속 환경에 따라 달라질 수 있습니다.
       </p>
 
       <h2>다운로드 속도</h2>

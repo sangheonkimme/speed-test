@@ -19,4 +19,14 @@ describe("FAQ structured data", () => {
     expect(dataUsage.a).toContain("실제 위치와 다를 수");
     expect(dataUsage.a).not.toContain("시·군·구");
   });
+
+  it("측정 시간과 서버 위치를 구현보다 강하게 단정하지 않는다", () => {
+    const copy = faq.map((item) => `${item.q} ${item.a}`).join(" ");
+
+    expect(copy).not.toContain("5~7초");
+    expect(copy).not.toContain("국내 서버");
+    expect(copy).not.toContain("과소 측정");
+    expect(copy).toContain("최대 15초");
+    expect(copy).toContain("Cloudflare 엣지");
+  });
 });

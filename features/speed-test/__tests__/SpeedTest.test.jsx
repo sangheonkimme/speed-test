@@ -54,7 +54,7 @@ describe("SpeedTest 화면", () => {
 
     expect(await screen.findByText("측정 중")).toBeInTheDocument();
     expect(
-      screen.getByText("국내 서버 · 다중 스트림 측정"),
+      screen.getByText("Cloudflare 엣지 · 다중 스트림 측정"),
     ).toBeInTheDocument();
     expect(screen.queryByText("다시 측정하기")).not.toBeInTheDocument();
   });

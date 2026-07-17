@@ -9,7 +9,7 @@ export const initialState = {
   phase: "idle",
   bigNum: 0,
   progress: 0,
-  phaseCap: "국내 서버(서울) · 다중 스트림 측정",
+  phaseCap: "Cloudflare 엣지 · 다중 스트림 측정",
   subsVisible: false,
   pingVal: null,
   jitterVal: null,
@@ -24,7 +24,7 @@ function reducer(state, action) {
       return {
         ...initialState,
         phase: "measuring",
-        phaseCap: "국내 서버 · 다중 스트림 측정",
+        phaseCap: "Cloudflare 엣지 · 다중 스트림 측정",
         env: state.env, // 환경 정보는 재측정 사이에도 유지
       };
     case "ENV_DONE":

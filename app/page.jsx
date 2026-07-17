@@ -9,7 +9,7 @@ const jsonLd = {
       name: '스피드체크',
       applicationCategory: 'UtilitiesApplication',
       operatingSystem: 'Web',
-      description: '무료·무가입·무설치 인터넷 속도 측정. 다운로드·업로드·핑·지터를 3초 안에 확인.',
+      description: '무료·무가입·무설치 인터넷 속도 측정. 다운로드·업로드·핑·지터를 한 번에 확인.',
       offers: { '@type': 'Offer', price: '0', priceCurrency: 'KRW' },
       inLanguage: 'ko',
     },
@@ -30,16 +30,11 @@ export default function Home() {
         <details className="seo-details">
           <summary>속도 측정 안내 및 자주 묻는 질문</summary>
           <div className="seo-content">
-            <h2>인터넷 속도 측정, 왜 스피드체크인가요?</h2>
+            <h2>스피드체크에서는 무엇을 측정하나요?</h2>
             <p>
-              스피드체크는 접속 즉시 자동으로 측정을 시작하는 무료 인터넷 속도 테스트입니다.
-              앱 설치나 회원가입 없이 다운로드·업로드 속도, 지연(핑), 지터까지 한 번에 확인하고,
-              웹서핑·스트리밍·화상회의·게임 등 용도별 적합도로 내 인터넷 상태를 진단할 수 있습니다.
-            </p>
-            <h2>KT · SK브로드밴드 · LG유플러스 속도 비교</h2>
-            <p>
-              측정 시 공인 IP를 기반으로 통신사(KT, SK브로드밴드, LG유플러스)와 광역 지역을 추정합니다.
-              이 정보는 실제 접속 위치와 다를 수 있으며, 시·군·구나 정밀 위치는 표시하거나 수집하지 않습니다.
+              페이지에 접속하면 다운로드 측정이 자동으로 시작됩니다. 다운로드·업로드 속도와 핑·지터를 확인하고,
+              측정값을 바탕으로 웹서핑·스트리밍·화상회의·게임의 사용 적합도를 함께 보여줍니다.
+              결과는 측정 시점의 기기, 연결 방식과 네트워크 상황에 따라 달라질 수 있습니다.
             </p>
             {faq.map((item) => (
               <div key={item.q}>
