@@ -1,6 +1,9 @@
+import Script from 'next/script';
 import './globals.css';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://speedcheck.vercel.app';
+const RAW_GTM_ID = process.env.NEXT_PUBLIC_GTM_ID;
+const GTM_ID = /^GTM-[A-Z0-9]+$/.test(RAW_GTM_ID || '') ? RAW_GTM_ID : null;
 
 export const metadata = {
   metadataBase: new URL(SITE_URL),
@@ -24,7 +27,7 @@ export const metadata = {
     description: '접속 즉시 자동 측정. 무료·무가입·무설치.',
   },
   twitter: {
-    card: 'summary',
+    card: 'summary_large_image',
     title: '인터넷 속도 측정 — 스피드체크',
     description: '접속 즉시 자동 측정. 무료·무가입·무설치.',
   },
@@ -61,7 +64,24 @@ export default function RootLayout({ children }) {
           href="https://cdn.jsdelivr.net/gh/wanteddev/wanted-sans@v1.0.4/packages/wanted-sans/fonts/webfonts/variable/split/WantedSansVariable.css"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        {GTM_ID && (
+          <>
+            <noscript>
+              <iframe
+                src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`}
+                height="0"
+                width="0"
+                style={{ display: 'none', visibility: 'hidden' }}
+              />
+            </noscript>
+            <Script id="gtm" strategy="afterInteractive">
+              {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','${GTM_ID}');`}
+            </Script>
+          </>
+        )}
+        {children}
+      </body>
     </html>
   );
 }
