@@ -8,6 +8,7 @@ import { fmtSpeed } from "./domain/format";
 import { commerce } from "./domain/recommendations";
 import { useSpeedTest } from "./hooks/useSpeedTest";
 import { useToast } from "./hooks/useToast";
+import { renderResultImage } from "./share/resultImage";
 import { AdSlot } from "./components/AdSlot";
 import { MetricsPanel } from "./components/MetricsPanel";
 import { ResultPanel } from "./components/ResultPanel";
@@ -54,14 +55,42 @@ export default function SpeedTest() {
     const ispText = test.env?.isp ? ` (${test.env.isp})` : "";
     const text = `내 인터넷 속도: ${speed.v}${speed.u}${ispText} — 스피드체크에서 바로 측정했어요`;
     track("result_shared", { channel });
-    if (channel === "native" && navigator.share) {
+
+    // 이미지 카드 공유 (FR-8) — 모바일 공유 시트에서 카카오톡 등으로 이미지+링크 전송
+    if (channel === "native") {
       try {
-        await navigator.share({ title: "스피드체크", text, url: location.origin });
+        const blob = await renderResultImage({
+          speedValue: speed.v,
+          speedUnit: speed.u,
+          gradeTitle,
+          isp: test.env?.isp,
+          region: test.env?.region,
+        });
+        const file = new File([blob], "speedcheck.png", { type: "image/png" });
+        if (navigator.canShare?.({ files: [file] })) {
+          await navigator.share({ files: [file], title: "스피드체크", text, url: location.origin });
+          return;
+        }
+        if (navigator.share) {
+          await navigator.share({ title: "스피드체크", text, url: location.origin });
+          return;
+        }
+        // 데스크톱 fallback: 이미지 저장 + 링크 복사
+        const objectUrl = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = objectUrl;
+        a.download = "speedcheck-result.png";
+        a.click();
+        URL.revokeObjectURL(objectUrl);
+        await navigator.clipboard.writeText(`${text}\n${location.origin}`);
+        toast("결과 이미지를 저장하고 링크를 복사했어요");
         return;
-      } catch {
-        // 공유 취소/실패 시 clipboard fallback을 시도한다.
+      } catch (err) {
+        if (err?.name === "AbortError") return; // 사용자가 공유 시트를 닫음
+        // 이미지 생성/공유 실패 → 텍스트 복사 fallback으로 진행
       }
     }
+
     try {
       await navigator.clipboard.writeText(`${text}\n${location.origin}`);
       toast("결과가 복사됐어요 — 붙여넣어 공유하세요");

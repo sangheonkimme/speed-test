@@ -14,7 +14,7 @@
 | --- | ---------------------------------------------- | ----------------------------------------------------------------------------- |
 | 1   | ~~도메인 표준화~~ ✅ 완료                       | `speed-value.com`(www 없음)으로 통일. www → apex 리다이렉트만 Vercel Domains에서 확인 |
 | 2   | ~~`NEXT_PUBLIC_SITE_URL` 설정~~ ✅ 완료         | sitemap이 `speed-value.com`으로 출력되는 것 확인됨                            |
-| 3   | GA4 + GTM 설치                                 | dataLayer 이벤트 9종이 이미 push됨 — GTM 스니펫만 추가하면 즉시 수집          |
+| 3   | GA4 + GTM 설치                                 | 페이지뷰 수집 후 커스텀 이벤트 연동 필요 — 절차는 `docs/analytics-setup.md`   |
 | 4   | Google Search Console 등록 + sitemap 제출      | 색인 요청까지                                                                 |
 | 5   | 네이버 서치어드바이저 등록 + sitemap 제출      | 웹문서 수집 확인                                                              |
 | 6   | 빙 웹마스터 등록                               | 5분 작업, 국내 PC 보조 유입                                                   |
