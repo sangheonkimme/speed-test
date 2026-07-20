@@ -258,10 +258,26 @@ describe("detectEnvironment", () => {
     const env = await detectEnvironment({ deps: { fetch: fetchImpl } });
     expect(env.device).toBe("PC"); // jsdom 기본 UA는 데스크톱
     expect(env.isp).toBe("KT");
-    expect(env.region).toBe("Seoul");
+    expect(env.region).toBe("서울"); // 로마자 광역 지역명은 한글로 매핑
     expect(env.region).not.toContain("Gangnam");
     expect(env.locationSource).toBe("ip");
     expect(env.locationAccuracy).toBe("approximate");
+  });
+
+  it("릴레이·프록시(예: iCloud 비공개 릴레이) 감지 시 ISP·지역을 표기하지 않는다", async () => {
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        region: "England",
+        city: "London",
+        asOrganization: "Cloudflare London, LLC",
+      }),
+    }));
+    const env = await detectEnvironment({ deps: { fetch: fetchImpl } });
+    expect(env.isp).toBeNull();
+    expect(env.region).toBeNull();
+    expect(env.locationSource).toBeNull();
+    expect(env.locationAccuracy).toBeNull();
   });
 
   it("meta 조회 실패 시 isp/region 없이 환경만 반환한다", async () => {
