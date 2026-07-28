@@ -5,6 +5,10 @@ const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://speedcheck.vercel.app";
 const RAW_GTM_ID = process.env.NEXT_PUBLIC_GTM_ID;
 const GTM_ID = /^GTM-[A-Z0-9]+$/.test(RAW_GTM_ID || "") ? RAW_GTM_ID : null;
+const RAW_ADSENSE_ID = process.env.NEXT_PUBLIC_ADSENSE_ID;
+const ADSENSE_ID = /^ca-pub-\d+$/.test(RAW_ADSENSE_ID || "")
+  ? RAW_ADSENSE_ID
+  : null;
 
 export const metadata = {
   metadataBase: new URL(SITE_URL),
@@ -88,6 +92,20 @@ export default function RootLayout({ children }) {
             href="https://cdn.jsdelivr.net/gh/wanteddev/wanted-sans@v1.0.3/packages/wanted-sans/fonts/webfonts/variable/split/WantedSansVariable.css"
           />
         </noscript>
+        {/*
+          AdSense 스니펫 — 사이트 연결·심사용. next/script 대신 raw 태그를 쓰는 이유는
+          서버 렌더링된 HTML에 그대로 실려야 AdSense 크롤러가 확실히 인식하기 때문.
+          자동 광고는 대시보드에서 OFF 유지 (측정 화면을 덮으면 완료율 가드레일 위반).
+          승인 후 실제 광고 단위를 붙일 때는 측정 중 대역폭 경합을 피하도록
+          측정 완료 이후 렌더되게 할 것 — AdSlot의 measuring 지면 주의.
+        */}
+        {ADSENSE_ID && (
+          <script
+            async
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_ID}`}
+            crossOrigin="anonymous"
+          />
+        )}
       </head>
       <body>
         {GTM_ID && (

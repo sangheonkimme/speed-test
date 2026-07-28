@@ -1,0 +1,3 @@
+# AdSense 승인 판매자 선언 (IAB ads.txt)
+# 퍼블리셔 ID는 NEXT_PUBLIC_ADSENSE_ID와 동일해야 한다. 한쪽만 바꾸면 광고가 조용히 미게재된다.
+google.com, pub-6553106832525632, DIRECT, f08c47fec0942fa0
