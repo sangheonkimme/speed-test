@@ -13,25 +13,25 @@
 
 ## 현재 상태
 
-| 항목 | 상태 |
-|---|---|
-| GTM 스니펫 (코드) | ✅ `NEXT_PUBLIC_GTM_ID` 환경변수로 활성화 |
-| GA4 페이지뷰 수집 | ✅ "GA4 기본" Google 태그 (All Pages) |
-| 커스텀 이벤트 → GA4 | ❌ **미설정** — 아래 작업 필요 |
+| 항목                | 상태                                      |
+| ------------------- | ----------------------------------------- |
+| GTM 스니펫 (코드)   | ✅ `NEXT_PUBLIC_GTM_ID` 환경변수로 활성화 |
+| GA4 페이지뷰 수집   | ✅ "GA4 기본" Google 태그 (All Pages)     |
+| 커스텀 이벤트 → GA4 | ❌ **미설정** — 아래 작업 필요            |
 
 ## 코드가 push하는 이벤트 (PRD §7)
 
-| 이벤트 | 발생 시점 | 주요 파라미터 | 사업적 의미 |
-|---|---|---|---|
-| `test_started` | 측정 자동 시작 | device, conn | 방문 대비 측정 시작률 |
-| `test_completed` | 업로드까지 완료 | down, up, ping, jitter, isp, region, durationMs | **측정 완료율 ≥90% 가드레일** |
-| `test_abandoned` | 측정 실패/중단 | atSec, error | 이탈 지점 분석 |
-| `verdict_shown` | 판정 노출 | verdict, variant | CTA 노출 분모 |
-| `compare_cta_click` | 리드젠 CTA 클릭 | verdict, variant | **핵심 KPI: CTA CTR** |
-| `commerce_click` | 커머스 추천 클릭 | type | 커머스 전환 |
-| `result_shared` | 결과 공유 | channel | 바이럴 루프 |
-| `ad_impression` | 광고 슬롯 노출 | slot | RPM 분모 |
-| `lead_submitted` / `lead_converted` | (예정) 자체 폼 도입 시 | partner, leadId | 리드젠 v1.5 |
+| 이벤트                              | 발생 시점              | 주요 파라미터                                   | 사업적 의미                   |
+| ----------------------------------- | ---------------------- | ----------------------------------------------- | ----------------------------- |
+| `test_started`                      | 측정 자동 시작         | device, conn                                    | 방문 대비 측정 시작률         |
+| `test_completed`                    | 업로드까지 완료        | down, up, ping, jitter, isp, region, durationMs | **측정 완료율 ≥90% 가드레일** |
+| `test_abandoned`                    | 측정 실패/중단         | atSec, error                                    | 이탈 지점 분석                |
+| `verdict_shown`                     | 판정 노출              | verdict, variant                                | CTA 노출 분모                 |
+| `compare_cta_click`                 | 리드젠 CTA 클릭        | verdict, variant                                | **핵심 KPI: CTA CTR**         |
+| `commerce_click`                    | 커머스 추천 클릭       | type                                            | 커머스 전환                   |
+| `result_shared`                     | 결과 공유              | channel                                         | 바이럴 루프                   |
+| `ad_impression`                     | 광고 슬롯 노출         | slot                                            | RPM 분모                      |
+| `lead_submitted` / `lead_converted` | (예정) 자체 폼 도입 시 | partner, leadId                                 | 리드젠 v1.5                   |
 
 ## GTM 연동 절차 (커스텀 이벤트 → GA4)
 
