@@ -3,7 +3,6 @@ import { fmtSpeed } from "../domain/format";
 import { AdSlot } from "./AdSlot";
 import { CommerceRecommendations } from "./CommerceRecommendations";
 import { ConversionCta } from "./ConversionCta";
-import { FooterLinks } from "./FooterLinks";
 import { ShareCard } from "./ShareCard";
 import { UsageCard } from "./UsageCard";
 
@@ -21,7 +20,6 @@ export function ResultPanel({ result, env, gradeTitle, recommendations, ctaVaria
         </div>
       </div>
       <AdSlot placement="bottom" />
-      <FooterLinks />
     </>
   );
 }

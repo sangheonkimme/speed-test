@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { guides } from '@/content/guides';
+import { SITE_URL, WEBSITE_ID, breadcrumbJsonLd, orgRef } from '@/content/site';
 
 export const metadata = {
   title: '인터넷 속도 가이드',
@@ -8,10 +9,49 @@ export const metadata = {
   alternates: { canonical: '/guide' },
 };
 
+const trail = [
+  { name: '홈', url: '/' },
+  { name: '인터넷 속도 가이드' },
+];
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'CollectionPage',
+      name: '인터넷 속도 가이드',
+      description: metadata.description,
+      url: `${SITE_URL}/guide`,
+      inLanguage: 'ko',
+      isPartOf: { '@id': WEBSITE_ID },
+      publisher: orgRef,
+      mainEntity: {
+        '@type': 'ItemList',
+        numberOfItems: guides.length,
+        itemListElement: guides.map((g, i) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          name: g.title,
+          url: `${SITE_URL}/guide/${g.slug}`,
+        })),
+      },
+    },
+    breadcrumbJsonLd(trail),
+  ],
+};
+
 export default function GuideIndexPage() {
   return (
     <div className="wrap seo-sec" style={{ paddingBottom: 64 }}>
-      <p><Link href="/">← 스피드체크로 돌아가기</Link></p>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <nav className="crumbs" aria-label="현재 위치">
+        <Link href="/">홈</Link>
+        <span aria-hidden="true"> › </span>
+        <span aria-current="page">인터넷 속도 가이드</span>
+      </nav>
       <h1 style={{ fontSize: 26, letterSpacing: '-0.02em' }}>인터넷 속도 가이드</h1>
       <p>
         측정만 하고 끝나지 않도록, 느린 원인을 찾고 해결하는 방법을 정리했습니다.

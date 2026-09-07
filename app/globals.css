@@ -183,3 +183,39 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(0,102,255,.45);outli
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
+
+/* 사이트 푸터 — 서버 렌더링 내부 링크(SEO 크롤 경로). 측정 완료 여부와 무관하게 항상 노출된다. */
+.site-foot{max-width:720px;margin:48px auto 0;padding:28px 20px 40px;border-top:1px solid var(--line)}
+.site-foot h2{font-size:14px;font-weight:700;letter-spacing:-.01em;margin:0 0 12px;color:var(--label-strong)}
+.site-foot ul{list-style:none;margin:0 0 20px;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 20px}
+.site-foot li{font-size:13px;line-height:1.5}
+.site-foot a{color:var(--label-neutral);text-decoration:none}
+.site-foot a:hover{text-decoration:underline}
+.site-foot .foot-meta{font-size:11.5px;color:var(--label-assist);line-height:1.7;border-top:1px solid var(--line);padding-top:16px}
+.site-foot .foot-meta a{color:var(--label-assist)}
+@media (max-width:520px){.site-foot ul{grid-template-columns:1fr}}
+
+/* 빵부스러기 — BreadcrumbList JSON-LD와 같은 내용을 화면에도 노출한다. */
+.crumbs{font-size:12.5px;color:var(--label-assist);margin:0 0 18px;line-height:1.6}
+.crumbs a{color:var(--label-assist);text-decoration:none}
+.crumbs a:hover{text-decoration:underline}
+.crumbs [aria-current="page"]{color:var(--label-neutral)}
+
+/* 직답 문단 — 답변엔진이 추출하는 첫 문장. 시각적으로도 결론임이 드러나게. */
+.seo-sec p.lead{font-size:15px;line-height:1.75;color:var(--label-strong);
+  background:var(--surface-alt,#f6f8fa);border-left:3px solid var(--primary);
+  border-radius:0 10px 10px 0;padding:14px 16px;margin:0 0 16px}
+.seo-sec p.lead strong{font-weight:700}
+
+/* 본문 표 — 엔진이 구조화된 사실로 파싱한다. 좁은 화면에서는 표만 가로 스크롤. */
+.table-wrap{overflow-x:auto;margin:16px 0 20px;-webkit-overflow-scrolling:touch}
+.table-wrap table{border-collapse:collapse;width:100%;min-width:420px;font-size:13.5px}
+.table-wrap caption{caption-side:top;text-align:left;font-size:13px;font-weight:700;
+  color:var(--label-strong);padding:0 0 8px}
+.table-wrap th,.table-wrap td{border:1px solid var(--line);padding:9px 12px;
+  text-align:left;line-height:1.6;vertical-align:top}
+.table-wrap thead th{background:var(--surface-alt,#f6f8fa);font-weight:700;
+  color:var(--label-strong);white-space:nowrap}
+.table-wrap tbody th{font-weight:600;color:var(--label-strong)}
+.table-wrap td{color:var(--label-neutral)}
+.table-note{font-size:12px;color:var(--label-assist);line-height:1.6;margin:8px 0 0}

@@ -1,6 +1,5 @@
-import { guides } from '@/content/guides';
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://speedcheck.vercel.app';
+import { guides, guideUpdated } from '@/content/guides';
+import { SITE_URL } from '@/content/site';
 
 export default function sitemap() {
   const guideEntries = [
@@ -12,7 +11,8 @@ export default function sitemap() {
     },
     ...guides.map((g) => ({
       url: `${SITE_URL}/guide/${g.slug}`,
-      lastModified: new Date(g.date),
+      // Article JSON-LD의 dateModified와 같은 소스를 쓴다 — 두 값이 어긋나면 신선도 신호가 깨진다.
+      lastModified: new Date(guideUpdated(g)),
       changeFrequency: 'monthly',
       priority: 0.6,
     })),
@@ -25,6 +25,12 @@ export default function sitemap() {
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 1,
+    },
+    {
+      url: `${SITE_URL}/about`,
+      lastModified: new Date(),
+      changeFrequency: 'yearly',
+      priority: 0.5,
     },
     {
       url: `${SITE_URL}/methodology`,

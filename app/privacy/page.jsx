@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { SITE_URL, breadcrumbJsonLd, orgRef } from '@/content/site';
 
 export const metadata = {
   title: '개인정보 처리방침',
@@ -6,10 +7,38 @@ export const metadata = {
   alternates: { canonical: '/privacy' },
 };
 
+const trail = [
+  { name: '홈', url: '/' },
+  { name: '개인정보 처리방침' },
+];
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebPage',
+      name: '개인정보 처리방침',
+      description: metadata.description,
+      url: `${SITE_URL}/privacy`,
+      inLanguage: 'ko',
+      publisher: orgRef,
+    },
+    breadcrumbJsonLd(trail),
+  ],
+};
+
 export default function PrivacyPage() {
   return (
     <div className="wrap seo-sec" style={{ paddingBottom: 64 }}>
-      <p><Link href="/">← 스피드체크로 돌아가기</Link></p>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <nav className="crumbs" aria-label="현재 위치">
+        <Link href="/">홈</Link>
+        <span aria-hidden="true"> › </span>
+        <span aria-current="page">개인정보 처리방침</span>
+      </nav>
       <h1 style={{ fontSize: 24, letterSpacing: '-0.02em' }}>개인정보 처리방침</h1>
       <p>시행일: 2026년 7월 17일</p>
 

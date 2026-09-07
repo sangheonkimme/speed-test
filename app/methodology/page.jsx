@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { SITE_URL, breadcrumbJsonLd, orgRef } from '@/content/site';
 
 export const metadata = {
   title: '측정 방법론',
@@ -7,10 +8,40 @@ export const metadata = {
   alternates: { canonical: '/methodology' },
 };
 
+const trail = [
+  { name: '홈', url: '/' },
+  { name: '측정 방법론' },
+];
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'TechArticle',
+      headline: '측정 방법론',
+      description: metadata.description,
+      url: `${SITE_URL}/methodology`,
+      mainEntityOfPage: `${SITE_URL}/methodology`,
+      inLanguage: 'ko',
+      author: orgRef,
+      publisher: orgRef,
+    },
+    breadcrumbJsonLd(trail),
+  ],
+};
+
 export default function MethodologyPage() {
   return (
     <div className="wrap seo-sec" style={{ paddingBottom: 64 }}>
-      <p><Link href="/">← 스피드체크로 돌아가기</Link></p>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <nav className="crumbs" aria-label="현재 위치">
+        <Link href="/">홈</Link>
+        <span aria-hidden="true"> › </span>
+        <span aria-current="page">측정 방법론</span>
+      </nav>
       <h1 style={{ fontSize: 24, letterSpacing: '-0.02em' }}>측정 방법론</h1>
       <p>스피드체크는 측정 방식을 투명하게 공개합니다.</p>
 
