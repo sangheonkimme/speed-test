@@ -11,12 +11,12 @@ export const SITE_NAME = "스피드체크";
 export const ORG_ID = `${SITE_URL}/#organization`;
 export const WEBSITE_ID = `${SITE_URL}/#website`;
 
-// ── 미확인 항목 ────────────────────────────────────────────────────────────
-// 아래 값은 운영자가 확인한 사실로만 채운다. 비워 두면 관련 마크업이 렌더되지 않는다.
-// 지어낸 값을 넣으면 인용 신뢰를 잃는다.
-export const CONTACT_EMAIL = "";        // 예: "hello@speed-value.com"
-export const OPERATOR_NAME = "";        // 운영 주체 표기 (개인/법인명)
-export const SAME_AS = [];              // 실재하는 공식 계정 URL만 (GitHub·SNS 등)
+// ── 운영 주체 (확인된 사실) ────────────────────────────────────────────────
+// 비워 두면 /about의 해당 블록과 Organization.contactPoint·sameAs가 렌더되지 않는다.
+// 확인되지 않은 값을 채우지 않는다 — 지어낸 값은 인용 신뢰를 잃는다.
+export const CONTACT_EMAIL = "sangheon1646@gmail.com";
+export const OPERATOR_NAME = "김상헌";
+export const SAME_AS = []; // 공식 계정 없음 — 생기면 여기에 추가하면 sameAs가 자동 선언된다
 // ───────────────────────────────────────────────────────────────────────────
 
 /** 사이트 전역에서 한 번만 선언되는 Organization + WebSite 엔티티. */
