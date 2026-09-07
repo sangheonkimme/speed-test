@@ -1,8 +1,8 @@
 import Script from "next/script";
+import { SiteFooter } from "./_components/SiteFooter";
+import { SITE_URL, siteJsonLd } from "@/content/site";
 import "./globals.css";
 
-const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://speedcheck.vercel.app";
 const RAW_GTM_ID = process.env.NEXT_PUBLIC_GTM_ID;
 const GTM_ID = /^GTM-[A-Z0-9]+$/.test(RAW_GTM_ID || "") ? RAW_GTM_ID : null;
 const RAW_ADSENSE_ID = process.env.NEXT_PUBLIC_ADSENSE_ID;
@@ -61,6 +61,14 @@ export default function RootLayout({ children }) {
   return (
     <html lang="ko">
       <head>
+        {/* 전역 엔티티 선언 — 사이트 전체에서 이 @id 하나만 참조한다 (LLMO 엔티티 분열 방지) */}
+
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd()) }}
+
+        />
+
         <link
           rel="icon"
           href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='7' fill='%230066FF'/%3E%3Cpath d='M13 4 6.5 13H11l-.8 7L17 11h-4.5L13 4Z' fill='%23fff'/%3E%3C/svg%3E"
@@ -124,6 +132,7 @@ export default function RootLayout({ children }) {
           </>
         )}
         {children}
+        <SiteFooter />
       </body>
     </html>
   );

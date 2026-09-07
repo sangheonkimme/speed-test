@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { guides, getGuide } from '@/content/guides';
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://speedcheck.vercel.app';
+import { guides, getGuide, guideUpdated } from '@/content/guides';
+import { SITE_URL, breadcrumbJsonLd, orgRef } from '@/content/site';
+import { GuideTable } from '@/app/_components/GuideTable';
 
 export function generateStaticParams() {
   return guides.map((g) => ({ slug: g.slug }));
@@ -22,6 +22,10 @@ export async function generateMetadata({ params }) {
       title: guide.title,
       description: guide.description,
       url: `/guide/${guide.slug}`,
+      // 가이드 페이지에 og:image가 없던 문제 보완. 루트 OG 이미지를 공용으로 쓴다.
+      images: ['/opengraph-image'],
+      publishedTime: guide.date,
+      modifiedTime: guideUpdated(guide),
     },
   };
 }
@@ -31,6 +35,13 @@ export default async function GuidePage({ params }) {
   const guide = getGuide(slug);
   if (!guide) notFound();
 
+  // 화면의 빵부스러기 UI와 동일한 내용이어야 한다 — 가시 텍스트에 없는 구조화 데이터는 스팸 신호다.
+  const trail = [
+    { name: '홈', url: '/' },
+    { name: '인터넷 속도 가이드', url: '/guide' },
+    { name: guide.title },
+  ];
+
   const jsonLd = {
     '@context': 'https://schema.org',
     '@graph': [
@@ -39,10 +50,14 @@ export default async function GuidePage({ params }) {
         headline: guide.title,
         description: guide.description,
         datePublished: guide.date,
+        // 사이트맵 lastmod와 같은 소스(guideUpdated) — 두 값은 영구히 일치한다.
+        dateModified: guideUpdated(guide),
+        image: `${SITE_URL}/opengraph-image`,
         inLanguage: 'ko',
         mainEntityOfPage: `${SITE_URL}/guide/${guide.slug}`,
-        author: { '@type': 'Organization', name: '스피드체크' },
-        publisher: { '@type': 'Organization', name: '스피드체크' },
+        // 전역에서 한 번 선언된 Organization을 참조한다 (페이지마다 새로 선언하면 엔티티가 분열된다).
+        author: orgRef,
+        publisher: orgRef,
       },
       {
         '@type': 'FAQPage',
@@ -52,6 +67,7 @@ export default async function GuidePage({ params }) {
           acceptedAnswer: { '@type': 'Answer', text: f.a },
         })),
       },
+      breadcrumbJsonLd(trail),
     ],
   };
 
@@ -63,9 +79,26 @@ export default async function GuidePage({ params }) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <p><Link href="/guide">← 가이드 목록</Link></p>
+      <nav className="crumbs" aria-label="현재 위치">
+        <Link href="/">홈</Link>
+        <span aria-hidden="true"> › </span>
+        <Link href="/guide">인터넷 속도 가이드</Link>
+        <span aria-hidden="true"> › </span>
+        <span aria-current="page">{guide.title}</span>
+      </nav>
       <article>
         <h1 style={{ fontSize: 26, letterSpacing: '-0.02em', lineHeight: 1.35 }}>{guide.title}</h1>
+
+        {/*
+          직답 문단 — 답변엔진은 페이지를 요약하지 않고 답이 되는 문장을 추출한다.
+          문맥 없이 단독으로 사실을 말해야 하므로 지시어("위에서 말한", "이것은")를 쓰지 않는다.
+        */}
+        {guide.lead && (
+          <p className="lead">
+            <strong>결론부터:</strong> {guide.lead}
+          </p>
+        )}
+
         <p>{guide.description}</p>
 
         {guide.sections.map((s) => (
@@ -74,6 +107,7 @@ export default async function GuidePage({ params }) {
             {s.p.map((para, i) => (
               <p key={i}>{para}</p>
             ))}
+            {s.table && <GuideTable {...s.table} />}
           </section>
         ))}
 
