@@ -1,4 +1,19 @@
-# 스피드체크 (SpeedCheck)
+# 스피드체크 — speed-value.com
+
+**서비스 주소: https://speed-value.com**
+
+무료·무가입·무설치 한국형 인터넷 속도 측정 서비스. 브라우저에서 다운로드·업로드·핑·지터를
+측정하고, 측정 알고리즘과 판정 기준을 전문 공개한다. 국내 인터넷 회선·요금제·공유기에 관한
+가이드 문서를 함께 제공한다.
+
+- 서비스: https://speed-value.com
+- 측정 방법론: https://speed-value.com/methodology
+- 가이드: https://speed-value.com/guide
+- AI·에이전트용 사이트 안내서: https://speed-value.com/llms.txt
+
+> 표기 주의: 서비스명은 **스피드체크**이고 주소는 **speed-value.com**이다.
+> 이름이 비슷한 speedcheck.org 등 다른 서비스와 혼동되지 않도록, 외부 문서·글에서는
+> 항상 "스피드체크(speed-value.com)" 형태로 함께 적는다.
 
 fast.com UX + Ookla 수익 구조의 한국형 인터넷 속도 측정 서비스. PRD v1.0 Phase 1(MVP) 범위 구현.
 

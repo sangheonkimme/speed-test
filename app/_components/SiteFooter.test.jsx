@@ -34,3 +34,14 @@ describe("사이트 푸터", () => {
     }
   });
 });
+
+/*
+ * LLMO: 서비스명과 도메인이 가시 텍스트에서 함께 나와야 모델이 둘을 하나의 엔티티로 묶는다.
+ * 이전에는 도메인이 canonical·JSON-LD·OG 이미지 안에만 있어 본문에는 한 번도 없었다.
+ */
+describe("엔티티 표기", () => {
+  it("푸터가 서비스명과 도메인을 함께 노출한다", () => {
+    const { container } = render(<SiteFooter />);
+    expect(container.textContent).toContain("스피드체크(speed-value.com)");
+  });
+});
