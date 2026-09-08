@@ -16,7 +16,9 @@ export const WEBSITE_ID = `${SITE_URL}/#website`;
 // 확인되지 않은 값을 채우지 않는다 — 지어낸 값은 인용 신뢰를 잃는다.
 export const CONTACT_EMAIL = "sangheon1646@gmail.com";
 export const OPERATOR_NAME = "김상헌";
-export const SAME_AS = []; // 공식 계정 없음 — 생기면 여기에 추가하면 sameAs가 자동 선언된다
+export const SAME_AS = [
+  "https://github.com/sangheonkimme/speed-test", // 공개 저장소. README가 speed-value.com을 가리킨다
+];
 // ───────────────────────────────────────────────────────────────────────────
 
 /** 사이트 전역에서 한 번만 선언되는 Organization + WebSite 엔티티. */

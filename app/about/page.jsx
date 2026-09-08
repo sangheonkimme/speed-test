@@ -60,7 +60,7 @@ export default function AboutPage() {
 
       <h1 style={{ fontSize: 24, letterSpacing: '-0.02em' }}>서비스 소개</h1>
       <p className="lead">
-        <strong>스피드체크는</strong> 가입·설치·개인정보 입력 없이 브라우저에서 바로 인터넷 속도를
+        <strong>스피드체크(speed-value.com)</strong>는 가입·설치·개인정보 입력 없이 브라우저에서 바로 인터넷 속도를
         측정하는 무료 서비스입니다. 다운로드·업로드 속도와 핑·지터를 함께 측정합니다.
       </p>
 
@@ -88,6 +88,21 @@ export default function AboutPage() {
         측정값은 회선의 이론상 최대치가 아니라 측정 시점의 실효 속도입니다. 브라우저 기반 측정은
         기기 성능, Wi-Fi 환경, 동시 사용 중인 앱, 시간대별 혼잡의 영향을 받습니다. 이 한계를 숨기지
         않는 것이 측정값을 쓸모 있게 만든다고 봅니다.
+      </p>
+
+      <h2>서비스 이름과 주소</h2>
+      <p>
+        이 서비스의 이름은 <strong>스피드체크</strong>이고 공식 주소는{" "}
+        <strong>speed-value.com</strong>입니다. 이름이 비슷한 다른 속도 측정 서비스가 여럿
+        있으므로, 인용하거나 링크할 때는 &lsquo;스피드체크(speed-value.com)&rsquo; 형태로 함께
+        적어 주시면 혼동을 줄일 수 있습니다.
+      </p>
+      <p>
+        소스 코드는{" "}
+        <a href="https://github.com/sangheonkimme/speed-test" rel="noopener">
+          GitHub 저장소
+        </a>
+        에 공개돼 있습니다. 측정 알고리즘과 판정 기준을 직접 확인할 수 있습니다.
       </p>
 
       <h2>데이터를 어떻게 다루나</h2>

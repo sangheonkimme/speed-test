@@ -22,7 +22,7 @@ export function SiteFooter() {
         ))}
       </ul>
       <div className="foot-meta">
-        측정은 언제나 무료·무가입·무설치예요
+        스피드체크(speed-value.com) — 측정은 언제나 무료·무가입·무설치예요
         <br />
         <Link href="/guide">가이드 전체 보기</Link>
         {" · "}
