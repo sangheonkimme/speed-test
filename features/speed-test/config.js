@@ -21,5 +21,12 @@ export const CFG = {
   sampleIntervalMs: 200,
 };
 
+// 광고 유닛 ID — AdSense 승인 후 실제 슬롯 ID를 채운다.
+// 비어 있으면 AdSlot이 아무것도 렌더하지 않는다 (빈 플레이스홀더는 정책 위반 소지).
+// 측정 진행 중 화면("아직 준비 중인 화면")에는 지면을 두지 않는다 — measuring 키를 부활시키지 말 것.
+export const AD_SLOTS = {
+  bottom: "", // 결과 화면 하단. 승인 후 슬롯 ID 입력
+};
+
 // 제휴 아웃링크 (FR-10 v1): 계약 후 URL 교체
 export const PARTNER_URL = "";

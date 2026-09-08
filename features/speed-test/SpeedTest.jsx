@@ -2,14 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { track } from "./analytics";
-import { PARTNER_URL } from "./config";
+import { AD_SLOTS, PARTNER_URL } from "./config";
 import { grade, verdict } from "./domain/assessment";
 import { fmtSpeed } from "./domain/format";
 import { commerce } from "./domain/recommendations";
 import { useSpeedTest } from "./hooks/useSpeedTest";
 import { useToast } from "./hooks/useToast";
 import { renderResultImage } from "./share/resultImage";
-import { AdSlot } from "./components/AdSlot";
 import { MetricsPanel } from "./components/MetricsPanel";
 import { ResultPanel } from "./components/ResultPanel";
 import { SpeedGauge } from "./components/SpeedGauge";
@@ -37,7 +36,7 @@ export default function SpeedTest() {
   useEffect(() => {
     if (!done) return;
     if (showCta) track("verdict_shown", { verdict: assessment.text, variant: ctaVariant });
-    track("ad_impression", { slot: "result_bottom" });
+    if (AD_SLOTS.bottom) track("ad_impression", { slot: "result_bottom" });
   }, [done, showCta, assessment?.text, ctaVariant]);
 
   const handleCta = () => {
@@ -118,7 +117,6 @@ export default function SpeedTest() {
           <TestStatus phase={test.phase} done={done} progress={test.progress} phaseCap={test.phaseCap} gradeTitle={gradeTitle} gradeSubtitle={gradeSubtitle} onRestart={test.start} />
         </div>
         {test.subsVisible && <MetricsPanel upload={done && test.result.up != null ? test.result.up : test.upLive} ping={test.pingVal} jitter={test.jitterVal} />}
-        {!done && test.phase !== "error" && <AdSlot placement="measuring" />}
         {done && <ResultPanel result={test.result} env={test.env} gradeTitle={gradeTitle} recommendations={recommendations} ctaVariant={ctaVariant} showCta={showCta} onCtaClick={handleCta} onShare={handleShare} onRecommendation={handleRecommendation} />}
       </main>
       <div className={`toast${toastMsg ? " on" : ""}`} role="status">{toastMsg}</div>
