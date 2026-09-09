@@ -121,19 +121,28 @@ export function useSpeedTest({
       });
 
     try {
-      // 핑(병렬 버스트) + 다운로드 동시 시작 — 접속 즉시 수치 표시 (fast.com 방식)
-      const pingPromise = eng
-        .measurePing(5, undefined, { signal: ac.signal })
+      // 핑을 먼저 끝내고 다운로드를 시작한다.
+      //
+      // ⚠️ 이전에는 둘을 동시에 띄웠는데(fast.com 방식이라 적어 뒀었다), 좁은 회선에서는
+      // 핑 요청이 다운로드 5스트림과 경합해 화면의 "지연(핑)"이 사실상 부하 중 지연이 됐다.
+      // 부하 중 지연은 measureDownload가 loadedLatency로 따로 잰다. 둘을 섞지 말 것.
+      //
+      // 핑은 pingBudgetMs 예산이 있어 느린 회선에서도 다운로드 시작을 오래 늦추지 않는다.
+      const pingRes = await eng
+        .measurePing(undefined, undefined, { signal: ac.signal })
         .then((p) => {
           safeDispatch({ type: "PING_DONE", ping: p.ping, jitter: p.jitter });
           return p;
         })
         .catch(() => ({ ping: 0, jitter: 0 }));
+      if (!live()) return;
 
       const dl = await eng.measureDownload(
         ({ mbps, elapsedMs }) => {
-          // 속도감 있는 진행률: 지수 ease-out — 3초 ~66%, 5초 ~84%, 7초 ~92%, 완료 시 100%
-          const frac = Math.min(0.97, 1 - Math.exp(-elapsedMs / 2800));
+          // 지수 ease-out 진행률 — 3초 ~44%, 6초 ~68%, 9초 ~82%, 완료 시 100%.
+          // 시간 상수는 실제 측정 길이에 맞춰야 한다. 측정이 6~10초로 길어졌는데
+          // 예전 상수(2800)를 그대로 두면 3초 만에 97% 상한에 붙어 멈춘 것처럼 보인다.
+          const frac = Math.min(0.97, 1 - Math.exp(-elapsedMs / 5200));
           safeDispatch({
             type: "DOWNLOAD_PROGRESS",
             mbps,
@@ -143,7 +152,6 @@ export function useSpeedTest({
         null,
         { signal: ac.signal },
       );
-      const pingRes = await pingPromise;
       if (!live()) return;
 
       // 다운로드 완료 = 결과 화면 즉시 표시

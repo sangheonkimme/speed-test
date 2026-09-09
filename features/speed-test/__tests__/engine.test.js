@@ -56,7 +56,9 @@ describe("measurePing", () => {
     const res = await promise;
 
     expect(res.ping).toBe(20);
-    expect(res.jitter).toBeCloseTo(6.7, 1);
+    // 지터는 연속 샘플 간 차이의 평균이다: (|20-10| + |30-20|) / 2 = 10.
+    // 예전 정의(중앙값 기준 평균절대편차)로는 6.7이었다 — 이상치 하나에 무너져 교체했다.
+    expect(res.jitter).toBeCloseTo(10, 1);
     expect(res.samples).toHaveLength(3);
     expect(onSample).toHaveBeenCalledTimes(3);
   });

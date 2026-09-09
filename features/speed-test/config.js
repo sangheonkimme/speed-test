@@ -14,11 +14,27 @@ export const CFG = {
   ulStreams: 3,
   ulChunkStart: 131072, // 128KB 시작 — 느린 회선에서도 샘플 확보
   ulChunkMax: 8e6, // 빠른 회선은 8MB까지 적응형 확대
-  pingCount: 5,
-  convergeWindow: 4, // 최근 N개 샘플로 수렴 판단
-  convergeEpsilon: 0.05, // 5% 이내 변동이면 수렴
-  minSamplesBeforeConverge: 6,
   sampleIntervalMs: 200,
+
+  // ── 핑 (FR-2) ──────────────────────────────────────────────────────────
+  // 순차 측정한다. 병렬 버스트는 요청들이 서로 큐를 만들어 RTT를 왜곡하고,
+  // 그 왜곡이 지터로 잡힌다. 느린 회선에서 다운로드 시작이 밀리지 않도록 총 예산을 둔다.
+  pingCount: 8,
+  pingMinSamples: 4, // 예산을 넘겨도 최소 이만큼은 확보한다
+  pingBudgetMs: 1800,
+
+  // ── 다운로드 수렴 판정 ─────────────────────────────────────────────────
+  // ⚠️ 이 값들을 줄이면 과대 측정이 재발한다.
+  // 재방문이면 커넥션이 데워져 있어(HTTP/2 재사용·cwnd 성장·경로 버퍼) 초반 몇 초가
+  // 지속 가능 속도보다 훨씬 빠르게 흐른다. 그 구간은 "안정적"이라 짧은 창으로 보면
+  // 수렴으로 오판하고, 버스트 속도가 최종값으로 확정된다.
+  // 실측 재현: 조기 종료 3초·창 4샘플일 때 3.5Mbps 회선을 40Mbps로 보고(11.4배).
+  convergeWindow: 10, // 최근 N개 샘플(=2초)로 수렴 판단
+  convergeEpsilon: 0.05, // 5% 이내 변동이면 수렴
+  minSamplesBeforeConverge: 12,
+  convergeMinMs: 6000, // 이 시간 전에는 어떤 경우에도 조기 종료하지 않는다
+  trendGuardRatio: 0.85, // 최근 창이 직전 창의 85% 미만이면 하락 중 → 수렴으로 보지 않는다
+  finalWindowMs: 4000, // 최종값은 마지막 N ms 샘플에서 뽑는다 (버스트 구간 배제)
 };
 
 // 광고 유닛 ID — AdSense 승인 후 실제 슬롯 ID를 채운다.
