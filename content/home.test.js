@@ -50,11 +50,12 @@ describe("홈 판정 기준표", () => {
     expect(value("다운로드 병렬 스트림")).toBe(`${CFG.dlStreams}개`);
     expect(value("업로드 병렬 스트림")).toBe(`${CFG.ulStreams}개`);
     expect(value("속도 샘플링 간격")).toBe(`${CFG.sampleIntervalMs}ms`);
+    const windowSec = (CFG.convergeWindow * CFG.sampleIntervalMs) / 1000;
     expect(value("조기 종료 조건")).toBe(
-      `${CFG.convergeMinMs / 1000}초 경과 후, 최근 ${CFG.convergeWindow}개 샘플의 변동이 ` +
-        `${CFG.convergeEpsilon * 100}% 이내이고 속도가 하락 중이 아닐 때`,
+      `${CFG.convergeMinMs / 1000}초 경과 후, 최근 ${windowSec}초 구간과 직전 ${windowSec}초 구간의 ` +
+        `속도 중앙값 차이가 ${CFG.convergeEpsilon * 100}% 이내이고 하락 중이 아닐 때`,
     );
     expect(value("최종값 산출")).toBe(`측정 마지막 ${CFG.finalWindowMs / 1000}초 구간 샘플의 중앙값`);
-    expect(value("핑 측정 방식")).toBe(`순차 ${CFG.pingCount}회 (최대 ${CFG.pingBudgetMs / 1000}초)`);
+    expect(value("핑 측정 방식")).toBe(`워밍업 1회 후 순차 ${CFG.pingCount}회 (최대 ${CFG.pingBudgetMs / 1000}초)`);
   });
 });

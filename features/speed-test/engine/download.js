@@ -93,7 +93,7 @@ export async function measureDownload(onProgress, onLoadedLatency, options = {})
       // ⚠️ 안정적으로 보인다고 끝내면 안 된다. 데워진 커넥션의 초기 버스트도 "안정적"이다.
       // 그래서 세 조건을 모두 요구한다:
       //   ① convergeMinMs 경과 — 버스트가 꺼질 시간을 준다
-      //   ② 충분히 긴 창에서 변동이 작다
+      //   ② 최근 2초 구간과 직전 2초 구간의 중앙값 차이가 작다 (개별 샘플은 원래 흔들린다)
       //   ③ 하락 추세가 아니다 — 최근 창이 직전 창보다 뚜렷이 낮으면 아직 떨어지는 중이다
       if (
         speedSamples.length >= CFG.minSamplesBeforeConverge &&
@@ -101,13 +101,17 @@ export async function measureDownload(onProgress, onLoadedLatency, options = {})
       ) {
         const w = speedSamples.slice(-CFG.convergeWindow).map((s) => s.mbps);
         const m = median(w);
-        const maxDev = Math.max(...w.map((v) => Math.abs(v - m) / (m || 1)));
         const prev = speedSamples
           .slice(-CFG.convergeWindow * 2, -CFG.convergeWindow)
           .map((s) => s.mbps);
         const prevMed = median(prev);
         const falling = prevMed > 0 && m / prevMed < CFG.trendGuardRatio;
-        if (maxDev < CFG.convergeEpsilon && !falling) finish();
+        // 개별 200ms 샘플이 아니라 2초 구간 중앙값끼리의 안정을 본다.
+        // 실제 회선의 순간 속도는 TCP·청크 단위 때문에 샘플마다 5% 넘게 흔들리는 게 정상이다.
+        // 샘플별 편차로 판정하던 시절에는 조기 종료가 거의 걸리지 않아 매번 15초 상한을 채웠다
+        // (2026-09-11 실측: 두 번 연속 14.9초 / 흔들림 시뮬레이션 0·5·20%에서 전부 15초).
+        const settled = prevMed > 0 && Math.abs(m - prevMed) / prevMed < CFG.convergeEpsilon;
+        if (settled && !falling) finish();
       }
       if (t - start >= CFG.dlMaxDurationMs) finish();
     },
