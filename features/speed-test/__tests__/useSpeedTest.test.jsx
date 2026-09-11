@@ -20,6 +20,7 @@ function createMockEngine() {
   return {
     runs,
     downloads: () => runs.filter((r) => r.type === "download"),
+    pings: () => runs.filter((r) => r.type === "ping"),
     uploads: () => runs.filter((r) => r.type === "upload"),
     detectEnvironment: vi.fn(async () => ({
       device: "PC",
@@ -29,7 +30,10 @@ function createMockEngine() {
       locationSource: "ip",
       locationAccuracy: "approximate",
     })),
-    measurePing: vi.fn(async () => ({ ping: 20, jitter: 3.2, samples: [] })),
+    measurePing: vi.fn(async (count, onSample, options = {}) => {
+      runs.push({ type: "ping", signal: options.signal });
+      return { ping: 20, jitter: 3.2, samples: [] };
+    }),
     measureDownload: vi.fn((onProgress, onLoadedLatency, options = {}) => {
       const d = deferred();
       runs.push({ type: "download", onProgress, signal: options.signal, d });
@@ -294,14 +298,21 @@ describe("useSpeedTest", () => {
     });
     await flush();
 
-    // mount → cleanup → remount: 첫 run은 중단, 두 번째 run만 활성
+    // mount → cleanup → remount: 첫 run은 핑 단계에서 이미 중단된다.
+    // 핑이 다운로드보다 먼저 실행되도록 바뀐 뒤로, 중단된 run은 다운로드에 진입조차
+    // 하지 않는다 — 낭비되는 측정 스트림이 없다는 뜻이라 이전보다 나은 동작이다.
+    const pings = engine.pings();
+    expect(pings).toHaveLength(2);
+    expect(pings[0].signal.aborted).toBe(true);
+    expect(pings[1].signal.aborted).toBe(false);
+
+    // 활성 측정은 정확히 하나뿐이고, 중단되지 않았다
     const downloads = engine.downloads();
-    expect(downloads).toHaveLength(2);
-    expect(downloads[0].signal.aborted).toBe(true);
-    expect(downloads[1].signal.aborted).toBe(false);
+    expect(downloads).toHaveLength(1);
+    expect(downloads[0].signal.aborted).toBe(false);
 
     await act(async () =>
-      downloads[1].d.resolve({
+      downloads[0].d.resolve({
         mbps: 88,
         bytes: 1,
         durationMs: 1,

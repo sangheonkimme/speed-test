@@ -89,11 +89,25 @@ export async function measureDownload(onProgress, onLoadedLatency, options = {})
       }
 
       // 수렴 → 조기 종료 (FR-3)
-      if (speedSamples.length >= CFG.minSamplesBeforeConverge) {
+      //
+      // ⚠️ 안정적으로 보인다고 끝내면 안 된다. 데워진 커넥션의 초기 버스트도 "안정적"이다.
+      // 그래서 세 조건을 모두 요구한다:
+      //   ① convergeMinMs 경과 — 버스트가 꺼질 시간을 준다
+      //   ② 충분히 긴 창에서 변동이 작다
+      //   ③ 하락 추세가 아니다 — 최근 창이 직전 창보다 뚜렷이 낮으면 아직 떨어지는 중이다
+      if (
+        speedSamples.length >= CFG.minSamplesBeforeConverge &&
+        t - start > CFG.convergeMinMs
+      ) {
         const w = speedSamples.slice(-CFG.convergeWindow).map((s) => s.mbps);
         const m = median(w);
         const maxDev = Math.max(...w.map((v) => Math.abs(v - m) / (m || 1)));
-        if (maxDev < CFG.convergeEpsilon && t - start > 3000) finish();
+        const prev = speedSamples
+          .slice(-CFG.convergeWindow * 2, -CFG.convergeWindow)
+          .map((s) => s.mbps);
+        const prevMed = median(prev);
+        const falling = prevMed > 0 && m / prevMed < CFG.trendGuardRatio;
+        if (maxDev < CFG.convergeEpsilon && !falling) finish();
       }
       if (t - start >= CFG.dlMaxDurationMs) finish();
     },
@@ -114,10 +128,18 @@ export async function measureDownload(onProgress, onLoadedLatency, options = {})
     throw new Error("download failed: no successful samples");
   }
 
-  // 최종값: 안정 구간(후반 60%) 샘플 중앙값
-  const stable = speedSamples
-    .slice(Math.floor(speedSamples.length * 0.4))
-    .map((s) => s.mbps);
+  // 최종값: 마지막 finalWindowMs 구간의 중앙값.
+  //
+  // 이전에는 "후반 60% 샘플"을 썼는데, 측정 전체가 초기 버스트 안에서 끝나면
+  // 후반 60%도 전부 버스트라 과대값을 그대로 반환했다. 시간 기준으로 자르면
+  // 측정이 길어질수록 초기 구간이 확실히 빠진다.
+  const elapsed = deps.now() - start;
+  const cutoff = elapsed - CFG.finalWindowMs;
+  const tail = speedSamples.filter((s) => s.t >= cutoff).map((s) => s.mbps);
+  // 측정이 finalWindowMs보다 짧게 끝난 경우(오류·중단)에는 후반 절반으로 물러선다.
+  const stable = tail.length
+    ? tail
+    : speedSamples.slice(Math.floor(speedSamples.length * 0.5)).map((s) => s.mbps);
   return {
     mbps: Math.round(median(stable) * 10) / 10,
     bytes: totalBytes,

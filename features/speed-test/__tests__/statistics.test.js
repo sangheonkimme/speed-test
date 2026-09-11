@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { median, meanDeviation } from "../engine/statistics.js";
+import { median, consecutiveJitter } from "../engine/statistics.js";
 
 describe("median", () => {
   it("빈 배열은 0", () => {
@@ -23,20 +23,28 @@ describe("median", () => {
   });
 });
 
-describe("meanDeviation", () => {
-  it("원소가 2개 미만이면 0", () => {
-    expect(meanDeviation([])).toBe(0);
-    expect(meanDeviation([42])).toBe(0);
+describe("consecutiveJitter", () => {
+  it("샘플이 2개 미만이면 0", () => {
+    expect(consecutiveJitter([])).toBe(0);
+    expect(consecutiveJitter([42])).toBe(0);
   });
 
-  it("중앙값 기준 절대 편차의 평균을 반환한다", () => {
-    // median([10, 20, 30]) = 20 → (10 + 0 + 10) / 3
-    expect(meanDeviation([10, 20, 30])).toBeCloseTo(20 / 3);
-    // median([1, 1, 1]) = 1 → 편차 0
-    expect(meanDeviation([1, 1, 1])).toBe(0);
+  it("연속 샘플 간 차이의 평균을 낸다", () => {
+    expect(consecutiveJitter([10, 20, 30])).toBe(10);
+    expect(consecutiveJitter([50, 50, 50])).toBe(0);
   });
 
-  it("정렬되지 않은 입력도 동일하게 계산한다", () => {
-    expect(meanDeviation([30, 10, 20])).toBeCloseTo(20 / 3);
+  it("이상치 하나에 무너지지 않는다", () => {
+    // 옛 방식(중앙값 기준 평균절대편차)은 이 샘플에서 지터 147.4ms를 냈다.
+    // 핑이 57ms인데 지터가 그 2.6배로 나오던 실제 사례다.
+    const spike = [55, 56, 57, 58, 790];
+    const jitter = consecutiveJitter(spike);
+    expect(jitter).toBeLessThan(200);
+    // 스파이크 자체는 반영하되(진짜 변동이므로) 핑 대비 터무니없는 값이 되진 않는다
+    expect(jitter).toBeGreaterThan(0);
+  });
+
+  it("순서가 바뀌면 값이 달라진다 — 순차 측정이 전제다", () => {
+    expect(consecutiveJitter([10, 20, 30])).not.toBe(consecutiveJitter([10, 30, 20]));
   });
 });

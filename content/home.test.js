@@ -51,7 +51,10 @@ describe("홈 판정 기준표", () => {
     expect(value("업로드 병렬 스트림")).toBe(`${CFG.ulStreams}개`);
     expect(value("속도 샘플링 간격")).toBe(`${CFG.sampleIntervalMs}ms`);
     expect(value("조기 종료 조건")).toBe(
-      `최근 ${CFG.convergeWindow}개 샘플의 변동이 ${CFG.convergeEpsilon * 100}% 이내로 수렴할 때`,
+      `${CFG.convergeMinMs / 1000}초 경과 후, 최근 ${CFG.convergeWindow}개 샘플의 변동이 ` +
+        `${CFG.convergeEpsilon * 100}% 이내이고 속도가 하락 중이 아닐 때`,
     );
+    expect(value("최종값 산출")).toBe(`측정 마지막 ${CFG.finalWindowMs / 1000}초 구간 샘플의 중앙값`);
+    expect(value("핑 측정 방식")).toBe(`순차 ${CFG.pingCount}회 (최대 ${CFG.pingBudgetMs / 1000}초)`);
   });
 });
