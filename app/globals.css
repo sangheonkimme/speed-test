@@ -215,3 +215,12 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(0,102,255,.45);outli
 .table-wrap tbody th{font-weight:600;color:var(--label-strong)}
 .table-wrap td{color:var(--label-neutral)}
 .table-note{font-size:12px;color:var(--label-assist);line-height:1.6;margin:8px 0 0}
+
+/*
+ * 본문 목록 — .seo-sec p 와 같은 글꼴 크기·색·행간을 쓴다.
+ * 규칙이 없던 시절 <li>는 브라우저 기본값(16px·진한 색·행간 normal)을 물려받아
+ * 14px 회색 문단 사이에서 혼자 크고 검게 튀었다. 들여쓰기도 기본값 40px이라 과했다.
+ */
+.seo-sec ul,.seo-sec ol{margin:0 0 12px;padding-left:20px}
+.seo-sec li{font-size:14px;line-height:1.7;color:var(--label-neutral)}
+.seo-sec li::marker{color:var(--label-assist)}
