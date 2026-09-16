@@ -224,3 +224,8 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(0,102,255,.45);outli
 .seo-sec ul,.seo-sec ol{margin:0 0 12px;padding-left:20px}
 .seo-sec li{font-size:14px;line-height:1.7;color:var(--label-neutral)}
 .seo-sec li::marker{color:var(--label-assist)}
+
+/* 본문 도해 — 인라인 SVG. 좁은 화면에서도 가로 스크롤 없이 줄어든다. */
+.figure{margin:18px 0 22px;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--bg-alt)}
+.figure svg{display:block;width:100%;height:auto}
+.figure figcaption{margin-top:10px;font-size:12px;line-height:1.6;color:var(--label-assist)}

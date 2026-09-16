@@ -14,6 +14,12 @@ export async function measurePing(count = CFG.pingCount, onSample, options = {})
   const deps = resolveDeps(options.deps);
   const { signal } = options;
   const rtts = [];
+  // 워밍업 1회 — 첫 요청에는 연결 수립 시간이 섞일 수 있어 결과를 버린다.
+  try {
+    await deps.fetch(DOWN(0) + `&r=${deps.random()}`, { cache: "no-store", signal });
+  } catch {
+    // 워밍업 실패는 무시한다
+  }
   const started = deps.now();
 
   for (let i = 0; i < count; i++) {

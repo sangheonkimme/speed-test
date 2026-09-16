@@ -41,7 +41,7 @@ afterEach(() => {
 
 describe("measurePing", () => {
   it("실패한 샘플을 걸러내고 median/jitter를 계산한다", async () => {
-    const latencies = [10, 20, 30, null, null];
+    const latencies = [5, 10, 20, 30, null, null]; // 첫 값은 워밍업
     let call = 0;
     const fetchImpl = vi.fn(async () => {
       const lat = latencies[call++];
@@ -68,7 +68,7 @@ describe("measurePing", () => {
     const fetchImpl = vi.fn(async () => {
       const mine = call++;
       await tick(10);
-      return { ok: mine !== 0 }; // 첫 요청만 5xx
+      return { ok: mine !== 1 }; // 0번은 워밍업(버려짐) — 첫 본측정(1번)만 5xx
     });
     const promise = measurePing(3, null, { deps: { fetch: fetchImpl } });
     await vi.advanceTimersByTimeAsync(50);
@@ -118,16 +118,23 @@ describe("measureDownload", () => {
   });
 
   it("수렴하지 않으면 15초 상한에서 종료한다", async () => {
-    let call = 0;
+    // 속도가 계속 올라가는 회선 — 2초 구간 중앙값이 매번 5% 넘게 달라져 수렴 판정이 서지 않는다.
+    // 예전의 톱니형 크기 램프는 "샘플별 편차" 판정 기준이라 만든 신호였고,
+    // 구간 중앙값 판정에서는 두 구간의 중앙값이 같아져 오히려 8초 무렵 수렴해 버렸다.
+    const t0 = performance.now(); // 가짜 타이머가 performance도 대체한다
     const fetchImpl = vi.fn(async (url) => {
       if (url.includes("bytes=0")) {
         await tick(20);
         return { ok: true, body: makeBody([]) };
       }
-      await tick(100);
-      // 톱니형 크기 램프(주기 ≈ 0.8초) — 샘플 창마다 속도가 달라져 수렴을 막는다
-      const size = 100000 * (1 + (call++ % 40));
-      return { ok: true, body: makeBody([new Uint8Array(size)]) };
+      const elapsed = performance.now() - t0;
+      // 청크 간격은 50ms로 고정해 200ms 샘플마다 데이터가 들어오게 하고, 크기를 시간에 따라 키운다.
+      // 간격을 늘렸다 줄이는 방식은 가짜 타이머에서 스트림 5개가 한꺼번에 도착해 샘플마다
+      // 같은 덩어리 수가 찍히므로 속도 변화가 샘플에 드러나지 않는다(수렴으로 오판).
+      await tick(50);
+      // 엔진은 value.length만 읽으므로 실제 버퍼를 할당하지 않는다
+      const size = Math.round(10000 * (1 + elapsed / 1000));
+      return { ok: true, body: makeBody([{ length: size }]) };
     });
 
     const promise = measureDownload(null, null, { deps: { fetch: fetchImpl } });

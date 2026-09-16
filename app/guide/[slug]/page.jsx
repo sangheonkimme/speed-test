@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { guides, getGuide, guideUpdated } from '@/content/guides';
 import { SITE_URL, breadcrumbJsonLd, orgRef } from '@/content/site';
 import { GuideTable } from '@/app/_components/GuideTable';
+import { Diagram } from '@/app/_components/Diagram';
 
 export function generateStaticParams() {
   return guides.map((g) => ({ slug: g.slug }));
@@ -100,6 +101,10 @@ export default async function GuidePage({ params }) {
         )}
 
         <p>{guide.description}</p>
+
+        {guide.diagram && (
+          <Diagram kind={guide.diagram.kind} caption={guide.diagram.caption} />
+        )}
 
         {guide.sections.map((s) => (
           <section key={s.h}>

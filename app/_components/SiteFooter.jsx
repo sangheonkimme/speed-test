@@ -30,6 +30,10 @@ export function SiteFooter() {
         {" · "}
         <Link href="/about">서비스 소개</Link>
         {" · "}
+        <Link href="/contact">문의하기</Link>
+        {" · "}
+        <Link href="/terms">이용약관</Link>
+        {" · "}
         <Link href="/privacy">개인정보 처리방침</Link>
       </div>
     </footer>

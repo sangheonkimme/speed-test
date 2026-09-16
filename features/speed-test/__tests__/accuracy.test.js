@@ -108,3 +108,45 @@ describe("핑·지터 정확도", () => {
     expect(took).toBeLessThan(3500); // 8발 × 500ms = 4초를 다 쓰지 않는다
   }, 20000);
 });
+
+describe("측정 소요 시간", () => {
+  /*
+   * 승인된 측정 시간은 8~10초다. 순간 속도가 흔들리는 실전 회선에서도 15초 상한까지 가면 안 된다.
+   * 회귀: 개별 200ms 샘플의 편차로 수렴을 판정하던 시절에는 흔들림이 5%만 넘어도
+   * 조기 종료가 걸리지 않아 매번 15초를 채웠다 (2026-09-11 실측 14.9초 × 2회).
+   */
+  function noisyLink(mbps, noise) {
+    let credit = 0, last = Date.now(), rate = mbps, switchedAt = 0;
+    return {
+      async take(want) {
+        for (;;) {
+          const now = Date.now();
+          if (now - switchedAt >= 200) {
+            rate = mbps * (1 + (Math.random() * 2 - 1) * noise);
+            switchedAt = now;
+          }
+          credit += ((now - last) / 1000) * (rate * 1e6) / 8;
+          last = now;
+          if (credit >= 1) {
+            const give = Math.min(want, Math.floor(credit));
+            credit -= give;
+            return give;
+          }
+          await new Promise((r) => setTimeout(r, 5));
+        }
+      },
+    };
+  }
+
+  for (const noise of [0.1, 0.2]) {
+    it(`순간 속도가 ±${noise * 100}% 흔들려도 10초 안에 정확히 끝난다`, async () => {
+      const t = Date.now();
+      const dl = await measureDownload(null, null, { deps: { fetch: fakeFetch(noisyLink(50, noise)) } });
+      const sec = (Date.now() - t) / 1000;
+      expect(sec).toBeGreaterThan(7.5); // 최소 측정 시간(8초)은 지킨다
+      expect(sec).toBeLessThan(10.5); // 상한(15초)까지 끌지 않는다
+      expect(dl.mbps).toBeGreaterThan(50 * 0.85);
+      expect(dl.mbps).toBeLessThan(50 * 1.15);
+    }, 30000);
+  }
+});
