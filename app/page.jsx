@@ -11,6 +11,7 @@ import {
 import { guides } from '@/content/guides';
 import { SpeedTest } from '@/features/speed-test';
 import { GuideTable } from '@/app/_components/GuideTable';
+import { Diagram } from '@/app/_components/Diagram';
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -89,6 +90,10 @@ export default function Home() {
           최소 8초는 측정합니다. 재방문이면 초반 몇 초가 실제 회선 속도보다 빠르게 흐르기 때문에,
           그 구간에서 끝내면 속도가 부풀려집니다.
         </p>
+        <Diagram
+          kind="measure-flow"
+          caption="연결을 하나만 열면 회선이 다 차지 않아 실제보다 낮게 나옵니다. 그래서 여러 개를 동시에 엽니다."
+        />
         <GuideTable {...paramTable} />
         <p>
           측정에 이름·연락처·주소 등의 입력을 요구하지 않습니다. 화면에 표시되는 통신사와 지역은 공인
