@@ -4,6 +4,6 @@ export function ConversionCta({ variant, onClick }) {
   );
 
   return (
-    <section className="cta-strong"><div className="eyebrow">측정 결과 기반 추천</div><div className="t">이 요금제면 최대 2배 빨라져요</div><div className="d">방금 측정한 속도 기준 추천이에요. 지금 개통 시 현금 사은품을 비교해 보세요.</div><button className="btn btn-lg btn-solid-white btn-full" onClick={onClick}>현금 사은품 비교하기</button><div className="legal">현재 통신사·측정 속도가 제휴 대리점에 전달돼요 · 광고</div></section>
+    <section className="cta-strong"><div className="eyebrow">측정 결과 기반 안내</div><div className="t">회선이 원인이라면 요금제를 비교해 보세요</div><div className="d">와이파이와 기기를 점검한 뒤에도 느리다면 회선 속도가 한계일 수 있어요. 방금 측정한 속도와 통신사를 기준으로 요금제·사은품 조건을 비교할 수 있어요.</div><button className="btn btn-lg btn-solid-white btn-full" onClick={onClick}>현금 사은품 비교하기</button><div className="legal">현재 통신사·측정 속도가 제휴 대리점에 전달돼요 · 광고</div></section>
   );
 }

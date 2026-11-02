@@ -147,7 +147,7 @@ export default function AboutPage() {
 
       {(OPERATOR_NAME || CONTACT_EMAIL) && (
         <>
-          <h2>운영 주체와 문의</h2>
+          <h2 id="operator">운영 주체와 문의</h2>
           {OPERATOR_NAME && (
             <p>
               운영: {OPERATOR_NAME}

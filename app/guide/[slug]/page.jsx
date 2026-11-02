@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { guides, getGuide, guideUpdated } from '@/content/guides';
-import { SITE_URL, breadcrumbJsonLd, orgRef } from '@/content/site';
+import { SITE_URL, OPERATOR_NAME, breadcrumbJsonLd, orgRef, authorRef, koDate } from '@/content/site';
 import { GuideTable } from '@/app/_components/GuideTable';
 import { Diagram } from '@/app/_components/Diagram';
 
@@ -56,8 +56,8 @@ export default async function GuidePage({ params }) {
         image: `${SITE_URL}/opengraph-image`,
         inLanguage: 'ko',
         mainEntityOfPage: `${SITE_URL}/guide/${guide.slug}`,
-        // 전역에서 한 번 선언된 Organization을 참조한다 (페이지마다 새로 선언하면 엔티티가 분열된다).
-        author: orgRef,
+        // 작성자는 화면 표기와 같은 사람. 발행 주체는 전역에서 한 번 선언된 Organization을 참조한다.
+        author: authorRef,
         publisher: orgRef,
       },
       {
@@ -73,6 +73,7 @@ export default async function GuidePage({ params }) {
   };
 
   const related = (guide.related || []).map(getGuide).filter(Boolean);
+  const updated = guideUpdated(guide);
 
   return (
     <div className="wrap seo-sec" style={{ paddingBottom: 64 }}>
@@ -89,6 +90,23 @@ export default async function GuidePage({ params }) {
       </nav>
       <article>
         <h1 style={{ fontSize: 26, letterSpacing: '-0.02em', lineHeight: 1.35 }}>{guide.title}</h1>
+
+        {/* 누가 언제 썼고 언제 고쳤는지 — 구조화 데이터(author·datePublished·dateModified)와 같은 값 */}
+        <p className="byline">
+          {OPERATOR_NAME && (
+            <>
+              글 <Link href="/about#operator">{OPERATOR_NAME}</Link>
+              <span aria-hidden="true"> · </span>
+            </>
+          )}
+          발행 <time dateTime={guide.date}>{koDate(guide.date)}</time>
+          {updated !== guide.date && (
+            <>
+              <span aria-hidden="true"> · </span>
+              최종 수정 <time dateTime={updated}>{koDate(updated)}</time>
+            </>
+          )}
+        </p>
 
         {/*
           직답 문단 — 답변엔진은 페이지를 요약하지 않고 답이 되는 문장을 추출한다.

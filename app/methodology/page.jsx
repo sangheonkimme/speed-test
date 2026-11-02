@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Diagram } from '@/app/_components/Diagram';
-import { SITE_URL, breadcrumbJsonLd, orgRef } from '@/content/site';
+import { SITE_URL, breadcrumbJsonLd, orgRef, authorRef } from '@/content/site';
 
 export const metadata = {
   title: '측정 방법론',
@@ -24,7 +24,7 @@ const jsonLd = {
       url: `${SITE_URL}/methodology`,
       mainEntityOfPage: `${SITE_URL}/methodology`,
       inLanguage: 'ko',
-      author: orgRef,
+      author: authorRef,
       publisher: orgRef,
     },
     breadcrumbJsonLd(trail),
@@ -94,7 +94,8 @@ export default function MethodologyPage() {
       <h2>표시 기준</h2>
       <p>
         1Mbps 미만은 Kbps 단위로 표시합니다. 등급 라벨과 용도별 적합도는 스트리밍·화상회의·게임 서비스의
-        공개 권장 대역폭을 기준으로 한 절대 속도 판정이며, 향후 실측 데이터가 축적되면 지역·통신사 평균 비교를 제공할 예정입니다.
+        공개 권장 대역폭을 기준으로 한 절대 속도 판정입니다. 같은 지역·같은 통신사 평균과 비교하지는
+        않습니다. 측정값을 서버에 모아 두지 않으므로 비교할 평균값 자체가 없기 때문입니다.
       </p>
 
       <h2>왜 연결을 여러 개 동시에 여나</h2>
@@ -164,9 +165,11 @@ export default function MethodologyPage() {
 
       <h2>앞으로</h2>
       <p>
-        지금은 절대 속도만으로 등급을 판정합니다. 측정 표본이 쌓이면 같은 지역·같은 통신사의 실제 측정값과
-        비교해 &lsquo;우리 집이 주변보다 느린가&rsquo;를 알려주는 것이 목표입니다. 그때는 표본 수와 집계
-        기간을 함께 공개해, 숫자가 어느 정도 신뢰할 만한지 직접 판단할 수 있게 할 계획입니다.
+        지금은 절대 속도만으로 등급을 판정합니다. 같은 지역·같은 통신사의 실제 측정값과 비교해
+        &lsquo;우리 집이 주변보다 느린가&rsquo;를 알려주는 것이 목표입니다. 그러려면 측정값을 모아야 하므로,
+        집계를 시작하기 전에 <Link href="/privacy">개인정보 처리방침</Link>을 먼저 고쳐 무엇을 어떤
+        형태로 보관하는지 밝히겠습니다. 공개할 때는 표본 수와 집계 기간을 함께 적어, 숫자가 어느 정도
+        신뢰할 만한지 직접 판단할 수 있게 하겠습니다.
       </p>
     </div>
   );

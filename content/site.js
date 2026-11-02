@@ -63,6 +63,21 @@ export function siteJsonLd() {
 /** 페이지 LD에서 쓰는 참조 — 중복 선언 대신 @id로 가리킨다. */
 export const orgRef = { "@id": ORG_ID };
 
+/**
+ * 글의 작성자. 운영자 이름이 있으면 사람으로, 없으면 조직으로 표기한다.
+ * 화면의 작성자 표기(/about#operator로 연결)와 같은 사실이어야 한다.
+ */
+export const OPERATOR_URL = `${SITE_URL}/about#operator`;
+export const authorRef = OPERATOR_NAME
+  ? { "@type": "Person", name: OPERATOR_NAME, url: OPERATOR_URL }
+  : orgRef;
+
+/** "2026-07-18" → "2026년 7월 18일" */
+export function koDate(iso) {
+  const [y, m, d] = iso.split("-").map(Number);
+  return `${y}년 ${m}월 ${d}일`;
+}
+
 /** 빵부스러기 — 화면 UI와 반드시 같은 내용으로 유지한다. */
 export function breadcrumbJsonLd(trail) {
   return {

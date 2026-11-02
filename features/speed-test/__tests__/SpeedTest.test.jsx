@@ -105,24 +105,8 @@ describe("SpeedTest 화면", () => {
     expect(screen.queryByText(/…/)).not.toBeInTheDocument();
   });
 
-  it("느린 결과에는 strong CTA와 맞춤 추천을 보여준다", async () => {
-    engine.measureDownload.mockResolvedValue({
-      mbps: 50,
-      bytes: 1,
-      durationMs: 1,
-      loadedLatency: null,
-    });
-    render(<SpeedTest />);
-
-    expect(
-      await screen.findByText("현금 사은품 비교하기"),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("방마다 느리다면 메시 와이파이"),
-    ).toBeInTheDocument();
-  });
-
-  it("?cta=weak이면 weak CTA variant를 보여준다", async () => {
+  // 제휴 주소가 채워졌을 때의 노출은 SpeedTest.partner.test.jsx가 맡는다.
+  it("제휴 주소가 비어 있으면 느린 결과에도 전환 CTA와 제휴 추천을 그리지 않는다", async () => {
     window.history.replaceState(null, "", "/?cta=weak");
     engine.measureDownload.mockResolvedValue({
       mbps: 50,
@@ -132,12 +116,13 @@ describe("SpeedTest 화면", () => {
     });
     render(<SpeedTest />);
 
-    expect(await screen.findByText("비교하기")).toBeInTheDocument();
-    expect(screen.getByText("현재 통신사·측정 속도 기준 현금 사은품 비교 · 광고")).toBeInTheDocument();
-    expect(screen.queryByText(/Gyeonggi-do 기준/)).not.toBeInTheDocument();
-    expect(
-      screen.queryByText("현금 사은품 비교하기"),
-    ).not.toBeInTheDocument();
+    await screen.findByText("다시 측정하기");
+    expect(screen.getByText("용도별 적합도")).toBeInTheDocument();
+    expect(screen.queryByText("현금 사은품 비교하기")).not.toBeInTheDocument();
+    expect(screen.queryByText("비교하기")).not.toBeInTheDocument();
+    expect(screen.queryByText("측정 결과 맞춤 추천")).not.toBeInTheDocument();
+    // 누르면 "준비 중"만 뜨는 버튼이 다시 생기면 안 된다
+    expect(document.body.textContent).not.toMatch(/준비 중/);
   });
 
   it("정상 결과에는 전환 CTA가 없다", async () => {

@@ -10,4 +10,9 @@ describe("측정 방법론", () => {
     expect(screen.getByText(/실제 접속 서버와 네트워크 경로는.*달라질 수/)).toBeInTheDocument();
     expect(screen.queryByText(/국내 구간에서 측정/)).not.toBeInTheDocument();
   });
+
+  it("지금 없는 기능을 '제공할 예정'으로 적지 않는다", () => {
+    const { container } = render(<MethodologyPage />);
+    expect(container.textContent).not.toMatch(/예정입니다|준비 중/);
+  });
 });

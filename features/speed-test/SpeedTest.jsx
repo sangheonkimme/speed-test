@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { track } from "./analytics";
-import { AD_SLOTS, PARTNER_URL } from "./config";
+import { AD_SLOTS, COMMERCE_URLS, PARTNER_URL } from "./config";
 import { grade, verdict } from "./domain/assessment";
 import { fmtSpeed } from "./domain/format";
 import { commerce } from "./domain/recommendations";
@@ -22,8 +22,11 @@ export default function SpeedTest() {
   const assessment = done ? verdict(test.result.down, test.env?.device === "모바일") : null;
   const [gradeTitle, gradeSubtitle] = done ? grade(test.result.down) : ["", ""];
   const hero = fmtSpeed(done ? test.result.down : test.bigNum);
-  const showCta = Boolean(done && assessment?.text !== "정상");
-  const recommendations = done ? commerce(assessment, test.result, test.env) : [];
+  // 제휴 주소가 없으면 버튼·카드를 그리지 않는다. 누를 곳이 없는 버튼은 미완성 화면이다.
+  const showCta = Boolean(PARTNER_URL && done && assessment?.text !== "정상");
+  const recommendations = done
+    ? commerce(assessment, test.result, test.env).filter((item) => COMMERCE_URLS[item.id])
+    : [];
   const estimatedRegion = test.env?.region ? `IP 기준 ${test.env.region} 추정` : null;
   const envText = test.env
     ? [test.env.isp, estimatedRegion, test.env.connType].filter(Boolean).join(" · ")
@@ -41,7 +44,6 @@ export default function SpeedTest() {
 
   const handleCta = () => {
     track("compare_cta_click", { verdict: assessment?.text, variant: ctaVariant });
-    if (!PARTNER_URL) return toast("제휴 대리점 연결 준비 중이에요");
     const url = new URL(PARTNER_URL);
     url.searchParams.set("isp", test.env?.isp || "");
     url.searchParams.set("mbps", Math.round(test.result.down));
@@ -100,7 +102,7 @@ export default function SpeedTest() {
 
   const handleRecommendation = (type) => {
     track("commerce_click", { type });
-    toast("제휴 준비 중이에요");
+    window.open(COMMERCE_URLS[type], "_blank", "noopener");
   };
 
   return (

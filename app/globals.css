@@ -202,6 +202,9 @@ button:focus-visible,a:focus-visible{outline:3px solid rgba(0,102,255,.45);outli
   background:var(--surface-alt,#f6f8fa);border-left:3px solid var(--primary);
   border-radius:0 10px 10px 0;padding:14px 16px;margin:0 0 16px}
 .seo-sec p.lead strong{font-weight:700}
+/* 작성자·발행일 — 제목 바로 아래, 본문보다 한 단계 약하게 */
+.seo-sec p.byline{font-size:13px;line-height:1.6;color:var(--label-assist);margin:-6px 0 16px}
+.seo-sec p.byline a{color:inherit;text-decoration:underline;text-underline-offset:2px}
 
 /* 본문 표 — 엔진이 구조화된 사실로 파싱한다. 좁은 화면에서는 표만 가로 스크롤. */
 .table-wrap{overflow-x:auto;margin:16px 0 20px;-webkit-overflow-scrolling:touch}
